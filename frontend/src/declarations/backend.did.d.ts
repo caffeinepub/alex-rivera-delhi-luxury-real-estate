@@ -12,22 +12,33 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Lead {
   'id' : string,
+  'propertyType' : PropertyType,
   'name' : string,
   'createdAt' : bigint,
   'email' : string,
   'message' : string,
   'phone' : string,
-  'budget' : string,
+  'budget' : bigint,
 }
 export interface Property {
   'id' : string,
-  'title' : string,
+  'features' : Array<string>,
+  'propertyType' : PropertyType,
+  'bedrooms' : bigint,
+  'name' : string,
   'createdAt' : bigint,
-  'description' : string,
+  'sqft' : bigint,
   'imageUrl' : string,
-  'price' : string,
+  'category' : PropertyCategory,
+  'price' : bigint,
   'location' : string,
 }
+export type PropertyCategory = { 'featured' : null } |
+  { 'land' : null };
+export type PropertyType = { 'commercial' : null } |
+  { 'villa' : null } |
+  { 'penthouse' : null } |
+  { 'land' : null };
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -62,26 +73,23 @@ export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createLead' : ActorMethod<
-    [string, string, string, string, string],
+    [string, string, string, bigint, PropertyType, string],
     undefined
   >,
-  'createProperty' : ActorMethod<
-    [string, string, string, string, string],
-    string
-  >,
+  'createProperty' : ActorMethod<[Property], undefined>,
   'deleteProperty' : ActorMethod<[string], undefined>,
-  'getAllLeads' : ActorMethod<[], Array<Lead>>,
   'getAllProperties' : ActorMethod<[], Array<Property>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getProperty' : ActorMethod<[string], Property>,
+  'getFeaturedProperties' : ActorMethod<[], Array<Property>>,
+  'getLeads' : ActorMethod<[], Array<Lead>>,
+  'getPropertiesByCategory' : ActorMethod<[PropertyCategory], Array<Property>>,
+  'getPropertiesByType' : ActorMethod<[PropertyType], Array<Property>>,
+  'getProperty' : ActorMethod<[string], [] | [Property]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'updateProperty' : ActorMethod<
-    [string, string, string, string, string, string],
-    boolean
-  >,
+  'updateProperty' : ActorMethod<[string, Property], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

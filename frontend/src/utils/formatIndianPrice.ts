@@ -1,60 +1,24 @@
 /**
- * Formats a number in Indian price notation with ₹ symbol.
- * Example: 28000000 → '₹2,80,00,000'
- * Example: 5000000 → '₹50,00,000'
- * Example: 100000 → '₹1,00,000'
+ * Formats a number into Indian currency format with ₹ symbol.
+ * e.g. 2800000000 → ₹28,00,00,000
  */
-export function formatIndianPrice(priceInRupees: number): string {
-  if (isNaN(priceInRupees) || priceInRupees === null || priceInRupees === undefined) {
-    return '₹0';
-  }
+export function formatIndianPrice(n: number): string {
+  if (isNaN(n) || n === 0) return '₹0';
 
-  const price = Math.round(priceInRupees);
-  const priceStr = price.toString();
+  const str = Math.round(n).toString();
+  const len = str.length;
 
-  if (priceStr.length <= 3) {
-    return `₹${priceStr}`;
-  }
+  if (len <= 3) return `₹${str}`;
 
-  // Last 3 digits
-  const lastThree = priceStr.slice(-3);
-  // Remaining digits
-  const remaining = priceStr.slice(0, -3);
+  // Indian number system: last 3 digits, then groups of 2
+  const lastThree = str.slice(len - 3);
+  const remaining = str.slice(0, len - 3);
 
-  // Group remaining digits in pairs from right
-  let result = '';
+  let formatted = '';
   for (let i = remaining.length; i > 0; i -= 2) {
     const start = Math.max(0, i - 2);
-    const chunk = remaining.slice(start, i);
-    result = chunk + (result ? ',' + result : '');
+    formatted = remaining.slice(start, i) + (formatted ? ',' + formatted : '');
   }
 
-  return `₹${result},${lastThree}`;
-}
-
-/**
- * Parses a price string that may contain 'Cr', 'L', or plain numbers.
- * Returns the numeric value in rupees.
- */
-export function parsePriceToNumber(priceStr: string): number {
-  if (!priceStr) return 0;
-
-  // Remove ₹ symbol and whitespace
-  const cleaned = priceStr.replace(/[₹,\s]/g, '').toLowerCase();
-
-  // Handle crore notation
-  if (cleaned.includes('cr')) {
-    const num = parseFloat(cleaned.replace('cr', ''));
-    return Math.round(num * 10000000);
-  }
-
-  // Handle lakh notation
-  if (cleaned.includes('l') || cleaned.includes('lac') || cleaned.includes('lakh')) {
-    const num = parseFloat(cleaned.replace(/l(ac|akh)?/, ''));
-    return Math.round(num * 100000);
-  }
-
-  // Plain number
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? 0 : num;
+  return `₹${formatted},${lastThree}`;
 }

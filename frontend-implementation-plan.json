@@ -1,29 +1,266 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Rotating one-per-line span animation in 6th section",
+  "title": "Delhi Luxury Empire – Full Frontend Rebuild with localStorage Persistence, City Filters, Indian Pricing & Admin Panel",
   "requirements": [
     {
-      "id": "REQ-30",
-      "summary": "Implement CSS-based rotating text animation for two span elements in the 6th section container, cycling each span with smooth fade/slide transitions",
+      "id": "REQ-1",
+      "summary": "Seed localStorage with 15 demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad) that persist across F5 refreshes",
       "acceptanceCriteria": [
-        "The two span elements inside the targeted container are stacked vertically (one per line), not side by side.",
-        "Only one span is fully visible at a time; the other is hidden or mid-transition.",
-        "The spans cycle continuously — span[1] appears, then span[2], then back to span[1] — in an infinite loop.",
-        "The transition between spans uses a smooth fade or slide animation (~0.4s).",
-        "Each span remains fully visible for approximately 2 seconds before transitioning out.",
-        "No other elements on the page are affected by this change."
+        "15 properties are visible on first load without any admin action",
+        "After F5 refresh, all 15 properties are still displayed",
+        "Each city has exactly 3 properties in the seeded data",
+        "Properties include all required fields: id, city, title, price, location, 3 photo URLs, enquiry count, lat, lng"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Contact.tsx",
-          "operation": "modify",
-          "description": "Locate the parent container at the specified XPath position within the Contact component and modify it to use flex-direction: column to stack the two span children vertically. Add unique className or data attributes to the parent container and both span elements to enable targeted CSS styling without affecting other elements."
+          "path": "frontend/src/types/property.ts",
+          "operation": "create",
+          "description": "Define the Property type with fields: id (number), city (string), title (string), price (number), location (string), photos (array of 3 strings), enquiryCount (number), lat (number), lng (number). Export this type for use throughout the app."
         },
+        {
+          "path": "frontend/src/utils/propertyStorage.ts",
+          "operation": "create",
+          "description": "Create localStorage utility module with hardcoded 15 demo properties (3 each for Delhi, Gurgaon, Noida, Aerocity, Ghaziabad). Include getProperties() that seeds localStorage on first call if empty, saveProperty(), deleteProperty(), updateProperty(). Use localStorage key 'dlx_properties'. Each seeded property must have realistic NCR data with id, city, title, price (raw number like 2800000000), location, 3 photo URLs referencing frontend/public/assets/generated/*.png, enquiryCount, lat, lng."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement Indian price formatting utility (₹28,00,00,000) and apply it everywhere prices are displayed",
+      "acceptanceCriteria": [
+        "formatIndianPrice(2800000000) returns '₹28,00,00,000'",
+        "formatIndianPrice(1300000000) returns '₹13,00,00,000'",
+        "No 'Cr' abbreviation appears anywhere on the site",
+        "The ₹ symbol is used consistently everywhere prices appear"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/formatIndianPrice.ts",
+          "operation": "create",
+          "description": "Implement formatIndianPrice(n: number): string that converts a raw integer to Indian number format with ₹ symbol. Handle lakhs and crores grouping (e.g., 2800000000 → ₹28,00,00,000). Export this function for use throughout the app."
+        },
+        {
+          "path": "frontend/src/components/PropertyCard.tsx",
+          "operation": "modify",
+          "description": "Import and use formatIndianPrice to display the price field. Replace any existing price formatting logic with formatIndianPrice(property.price)."
+        },
+        {
+          "path": "frontend/src/components/PropertyModal.tsx",
+          "operation": "modify",
+          "description": "Import and use formatIndianPrice to display the price field in the modal. Replace any existing price formatting logic with formatIndianPrice(property.price)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Implement propertyStorage.ts with CRUD functions for localStorage-based property management",
+      "acceptanceCriteria": [
+        "getProperties() returns 15 seeded properties on a fresh browser session",
+        "saveProperty() adds a new property that survives page refresh",
+        "deleteProperty() removes a property that stays removed after F5",
+        "updateProperty() persists changes after F5"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/propertyStorage.ts",
+          "operation": "modify",
+          "description": "Ensure all CRUD functions (getProperties, saveProperty, deleteProperty, updateProperty) correctly read/write to localStorage key 'dlx_properties'. Implement auto-seeding logic in getProperties() that checks if localStorage is empty and seeds with the 15 hardcoded defaults if so. Use JSON.parse/JSON.stringify for serialization."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Rebuild Properties component to load from localStorage and implement city filter tabs [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad]",
+      "acceptanceCriteria": [
+        "Clicking 'Delhi' shows exactly the 3 Delhi properties and no others",
+        "Clicking 'All' shows all 15 properties",
+        "City filter tabs are visually distinct for the active state",
+        "Property cards link correctly to the property detail page"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Properties.tsx",
+          "operation": "modify",
+          "description": "Replace backend fetch logic with propertyStorage.getProperties(). Implement city filter tabs UI with buttons for [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad]. Use useState to track the active city filter. Filter the properties array by city before rendering. Apply active tab styling (navy background) to the selected city. Render filtered properties as a responsive grid of PropertyCard components. Pass each property's id to PropertyCard so it can link to /property?id={id}."
+        },
+        {
+          "path": "frontend/src/components/PropertyCard.tsx",
+          "operation": "modify",
+          "description": "Update PropertyCard to accept a property prop with the new Property type from frontend/src/types/property.ts. Wrap the card in a link (<a> or React Router Link) that navigates to /property?id={property.id}. Display the formatted price using formatIndianPrice. Use property.photos[0] for the card image. Remove any backend-specific fields (propertyType, category, features, bedrooms, sqft) and display only title, price, location, and city."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Implement PropertyPage as a full property detail page with URL query params, photo carousel, and back button",
+      "acceptanceCriteria": [
+        "Navigating to /property?id=1 shows the correct property details",
+        "Back button calls window.history.back() and returns to the listings page",
+        "Photo carousel is swipeable on mobile",
+        "'View on Google Maps' button opens the correct Google Maps URL in a new tab",
+        "Price is displayed in Indian format with ₹ symbol"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/PropertyPage.tsx",
+          "operation": "create",
+          "description": "Create PropertyPage component that reads property id from URL query params (?id=X) using URLSearchParams or a utility function. Load the property from propertyStorage.getProperties().find(p => p.id === id). Display title, formatted price (using formatIndianPrice), location, city, enquiry count, lat/lng. Implement a photo carousel for property.photos array that supports touch swipe gestures on mobile. Include a 'View on Google Maps' button linking to https://maps.google.com/?q={lat},{lng} (opens in new tab). Add a top-left back button (←) that calls window.history.back() on click. Handle missing property by showing a 'Property not found' message."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the /property route in the client-side routing logic. Map /property to render the PropertyPage component. Ensure this route is accessible via direct URL navigation (not just internal navigation). Keep existing routes for /privacy, /terms, and /admin."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Redesign site with navy theme (remove gold/glassmorphism/3D effects, use Inter fonts, clean flat design)",
+      "acceptanceCriteria": [
+        "No gold or glassmorphism effects appear anywhere",
+        "Primary call-to-action buttons use navy #1E3A8A",
+        "Background is white/off-white, not dark",
+        "Playfair Display font is not loaded or used",
+        "Property cards have white backgrounds with navy borders"
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add CSS keyframe animation definitions for the rotating span effect. Create a @keyframes rule that handles opacity and translateY transitions with ~0.4s easing. Define the animation to show each span for ~2 seconds (visible state) with smooth fade-in and fade-out transitions. Apply staggered animation-delay to the second span so it begins its cycle after the first span completes its display window. Set animation-iteration-count to infinite for continuous cycling. Ensure the parent container has position: relative and the spans use position: absolute for proper stacking, with each span initially hidden (opacity: 0) and animated into view."
+          "description": "Remove Playfair Display font import. Remove all gold color definitions and replace with navy #1E3A8A. Set primary background to white #F8FAFC. Set border/divider color to light gray #E5E7EB. Remove any glassmorphism, gradient, or 3D effect classes. Ensure Inter or system-ui is the primary font. Update CSS custom properties to reflect the navy theme (--primary: #1E3A8A, --background: #F8FAFC, --border: #E5E7EB)."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Remove Playfair Display from the font family configuration. Update the color palette: set primary to navy #1E3A8A, background to white #F8FAFC, border to light gray #E5E7EB. Remove any gold, ivory, or dark theme color tokens. Ensure Inter or system-ui is the default font family. Remove any 3D shadow or glassmorphism utility classes."
+        },
+        {
+          "path": "frontend/src/components/PropertyCard.tsx",
+          "operation": "modify",
+          "description": "Update card styling to use white background (bg-white), navy border (border border-[#1E3A8A]), and flat design (no shadows, gradients, or 3D effects). Use navy #1E3A8A for primary buttons/CTAs. Remove any gold or glassmorphism classes."
+        },
+        {
+          "path": "frontend/src/components/Navbar.tsx",
+          "operation": "modify",
+          "description": "Update navbar to use navy theme colors. Replace backdrop-blur or glassmorphism effects with a solid white background with subtle shadow. Use navy #1E3A8A for active link states and CTAs. Remove any gold or dark theme styling."
+        },
+        {
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "modify",
+          "description": "Update footer to use navy theme colors. Replace dark backgrounds with light gray #E5E7EB or white #F8FAFC. Use navy #1E3A8A for headings and links. Remove any gold or dark theme styling."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Update Hero component with Delhi skyline background, trusted agent headline, RERA badge, and credentials bar",
+      "acceptanceCriteria": [
+        "Hero section displays 'Trusted Delhi Agent | 50+ Deals Closed' as main headline",
+        "RERA badge with code HRERA-PKL-2026-00123 is visible",
+        "Credentials '5+ Years | 50+ Happy Clients | CREDAI Member' are displayed",
+        "Hero uses navy color scheme, not dark/gold"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Hero.tsx",
+          "operation": "modify",
+          "description": "Update Hero component to use the generated Delhi skyline image as the background (reference frontend/public/assets/generated/delhi-skyline-hero.dim_1920x1080.png). Replace the headline with 'Trusted Delhi Agent | 50+ Deals Closed'. Add a RERA badge section displaying 'RERA Registered Agent – HRERA-PKL-2026-00123' with a badge icon or styled badge element. Add a credentials bar below the headline showing '5+ Years | 50+ Happy Clients | CREDAI Member' (separated with | dividers). Apply navy color scheme (#1E3A8A for primary elements, white text on navy buttons). Remove any gold or dark theme styling."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Update TestimonialsRotator to include Rohit Sharma testimonial and at least 2 other NCR client testimonials",
+      "acceptanceCriteria": [
+        "Rohit Sharma testimonial is present and displays correctly",
+        "At least 3 testimonials total are shown in the rotator",
+        "Testimonials cycle correctly with prev/next controls"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/TestimonialsRotator.tsx",
+          "operation": "modify",
+          "description": "Update the hardcoded testimonials array to include 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!' along with at least 2 other realistic NCR client testimonials. Ensure the rotator cycling logic (prev/next) works correctly with the updated array. Apply navy theme colors to the component."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Implement mobile-first design: fixed bottom action bar (60px tall, 2 CTAs), 48px+ touch targets, swipeable photo carousel",
+      "acceptanceCriteria": [
+        "Fixed bottom bar with 2 CTA buttons is visible on mobile screens (< 768px)",
+        "Bottom bar is 60px tall and spans full viewport width",
+        "All buttons throughout the site are at least 48px in height",
+        "Property photo carousel responds to touch swipe on mobile"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/MobileBottomBar.tsx",
+          "operation": "create",
+          "description": "Create MobileBottomBar component with a fixed bottom position (fixed bottom-0 left-0 right-0), height of 60px, full width, white background with navy borders. Include 2 primary CTA buttons: 'Calculate EMI' and 'Find My Property' (placeholders, no functionality required). Use navy #1E3A8A for button backgrounds. Ensure the bar is visible only on mobile screens (< 768px) using responsive Tailwind classes (md:hidden). Each button must be 48px+ tall to meet touch target requirements."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Import and render the MobileBottomBar component at the root level so it appears on all pages. Position it outside the main content wrapper to ensure it remains fixed at the bottom on mobile."
+        },
+        {
+          "path": "frontend/src/pages/PropertyPage.tsx",
+          "operation": "modify",
+          "description": "Implement touch swipe gestures for the photo carousel. Use a library like react-swipeable or implement touch event handlers (touchStart, touchMove, touchEnd) to detect left/right swipes and cycle through property.photos. Ensure the carousel is responsive and swipeable on mobile devices."
+        },
+        {
+          "path": "frontend/src/components/PropertyCard.tsx",
+          "operation": "modify",
+          "description": "Ensure all interactive buttons within PropertyCard (wishlist, compare, etc.) are at least 48px tall/wide to meet mobile touch target requirements. Add min-h-[48px] and min-w-[48px] Tailwind classes where needed."
+        },
+        {
+          "path": "frontend/src/components/Navbar.tsx",
+          "operation": "modify",
+          "description": "Ensure all interactive buttons and links in the navbar are at least 48px tall on mobile. Add min-h-[48px] Tailwind classes to mobile menu items and CTAs."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Rebuild AdminPanel with Internet Identity login, CRUD interface for localStorage properties, and live Indian price preview",
+      "acceptanceCriteria": [
+        "Unauthenticated users see a login prompt; authenticated users see the admin dashboard",
+        "Admin can add a new property that immediately appears in the frontend listings",
+        "Admin can edit an existing property's fields and save changes",
+        "Admin can delete a property which is immediately removed from listings",
+        "Price input shows live Indian-format preview while typing",
+        "City dropdown contains all 5 cities",
+        "3 photo URL fields are present in the form",
+        "Enquiry count field is editable"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminPanel.tsx",
+          "operation": "modify",
+          "description": "Remove backend integration (useQueries hooks for properties/leads). Use useInternetIdentity hook to require login. On unauthenticated state, show a login prompt button. After authentication, render a CRUD interface for managing properties from propertyStorage. Display all properties in a table with columns: ID, City, Title, Price (formatted), Location, Enquiry Count, Actions (Edit/Delete). Implement Add/Edit/Delete actions that call propertyStorage functions and trigger a component re-render to reflect changes immediately. Remove the Leads tab and focus only on property management."
+        },
+        {
+          "path": "frontend/src/components/admin/PropertyFormModal.tsx",
+          "operation": "modify",
+          "description": "Replace the existing property form with a new form matching the localStorage Property type: City dropdown [Delhi, Gurgaon, Noida, Aerocity, Ghaziabad], Title (text input), Price (number input with live preview showing formatIndianPrice result below), Location (text input), Lat (number input), Lng (number input), 3 Photo URL fields (text inputs for photos[0], photos[1], photos[2]), Enquiry Count (number input). On submit, call propertyStorage.saveProperty (for new) or propertyStorage.updateProperty (for edit). Close the modal and trigger parent component re-render. Use navy theme styling."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Register /property and /admin routes in App.tsx to support direct URL navigation",
+      "acceptanceCriteria": [
+        "Navigating to /property?id=X loads the PropertyPage component",
+        "Navigating to /admin loads the AdminPanel component",
+        "Both routes work on direct URL entry (not just internal navigation)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Update the client-side routing logic to register the /property route (rendering PropertyPage) and ensure the /admin route (rendering AdminPanel) is present. Use pathname matching logic (e.g., window.location.pathname) to conditionally render the appropriate page component. Ensure both routes work on direct URL entry and handle query parameters for /property. Keep existing routes for /privacy and /terms."
         }
       ]
     }

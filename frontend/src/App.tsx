@@ -1,91 +1,92 @@
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import { LanguageProvider } from './contexts/LanguageContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Properties from './components/Properties';
+import LandInvestment from './components/LandInvestment';
+import TestimonialsRotator from './components/TestimonialsRotator';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import MarketTicker from './components/MarketTicker';
-import EMICalculator from './components/EMICalculator';
-import CustomCursor from './components/CustomCursor';
-import LoadingScreen from './components/LoadingScreen';
-import ScrollProgressBar from './components/ScrollProgressBar';
+import CookieBanner from './components/CookieBanner';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import PropertyPage from './pages/PropertyPage';
 import AdminPanel from './pages/AdminPanel';
+import MobileBottomBar from './components/MobileBottomBar';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 5 * 60 * 1000,
       retry: 1,
-      staleTime: 30000,
     },
   },
 });
 
-function HomePage() {
+function AppContent() {
+  const path = window.location.pathname;
+
+  // Property detail page
+  if (path === '/property') {
+    return (
+      <>
+        <PropertyPage />
+        <MobileBottomBar />
+      </>
+    );
+  }
+
+  // Admin panel
+  if (path === '/admin') {
+    return <AdminPanel />;
+  }
+
+  // Privacy policy
+  if (path === '/privacy') {
+    return (
+      <>
+        <Navbar />
+        <PrivacyPolicy />
+        <Footer />
+      </>
+    );
+  }
+
+  // Terms & conditions
+  if (path === '/terms') {
+    return (
+      <>
+        <Navbar />
+        <TermsConditions />
+        <Footer />
+      </>
+    );
+  }
+
+  // Home page (default)
   return (
     <>
-      <Hero />
-      <About />
-      <Properties />
-      <Contact />
+      <Navbar />
+      <main>
+        <Hero />
+        <About />
+        <Properties />
+        <LandInvestment />
+        <TestimonialsRotator />
+        <Contact />
+      </main>
       <Footer />
+      <MobileBottomBar />
+      <CookieBanner />
     </>
   );
 }
 
-function Layout() {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <MarketTicker />
-      <Navbar />
-      <main>
-        <Outlet />
-      </main>
-      <EMICalculator />
-    </div>
-  );
-}
-
-const rootRoute = createRootRoute({
-  component: Layout,
-});
-
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: HomePage,
-});
-
-const adminRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin',
-  component: AdminPanel,
-});
-
-const routeTree = rootRoute.addChildren([indexRoute, adminRoute]);
-
-const router = createRouter({ routeTree });
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
-
 export default function App() {
-  const [loadingDone, setLoadingDone] = useState(false);
-
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <ScrollProgressBar />
-        <LoadingScreen onComplete={() => setLoadingDone(true)} />
-        <CustomCursor />
-        {loadingDone && <RouterProvider router={router} />}
-      </LanguageProvider>
+      <AppContent />
     </QueryClientProvider>
   );
 }

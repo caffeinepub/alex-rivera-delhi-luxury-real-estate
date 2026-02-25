@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { X, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { useCreateProperty, useUpdateProperty } from '../../hooks/useQueries';
 import type { Property } from '../../backend';
+import { PropertyType, PropertyCategory } from '../../backend';
 
 interface PropertyFormModalProps {
   open: boolean;
@@ -16,43 +16,54 @@ interface PropertyFormModalProps {
 }
 
 interface FormState {
-  title: string;
+  name: string;
   location: string;
   price: string;
+  propertyType: string;
+  category: string;
   imageUrl: string;
-  description: string;
+  sqft: string;
+  bedrooms: string;
+  features: string; // comma-separated
 }
 
 const EMPTY_FORM: FormState = {
-  title: '',
+  name: '',
   location: '',
   price: '',
+  propertyType: 'villa',
+  category: 'featured',
   imageUrl: '',
-  description: '',
+  sqft: '',
+  bedrooms: '',
+  features: '',
 };
 
-export default function PropertyFormModal({
-  open,
-  onClose,
-  property,
-}: PropertyFormModalProps) {
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [errors, setErrors] = useState<Partial<FormState>>({});
+function generateId(): string {
+  return `prop-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
 
+export default function PropertyFormModal({ open, onClose, property }: PropertyFormModalProps) {
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const createProperty = useCreateProperty();
   const updateProperty = useUpdateProperty();
 
   const isEditing = !!property;
-  const isPending = createProperty.isPending || updateProperty.isPending;
+  const isSaving = createProperty.isPending || updateProperty.isPending;
 
   useEffect(() => {
     if (property) {
       setForm({
-        title: property.title,
+        name: property.name,
         location: property.location,
-        price: property.price,
+        price: String(Number(property.price)),
+        propertyType: property.propertyType as string,
+        category: property.category as string,
         imageUrl: property.imageUrl,
-        description: property.description,
+        sqft: String(Number(property.sqft)),
+        bedrooms: String(Number(property.bedrooms)),
+        features: property.features.join(', '),
       });
     } else {
       setForm(EMPTY_FORM);
@@ -61,11 +72,13 @@ export default function PropertyFormModal({
   }, [property, open]);
 
   const validate = (): boolean => {
-    const newErrors: Partial<FormState> = {};
-    if (!form.title.trim()) newErrors.title = 'Title is required';
+    const newErrors: Partial<Record<keyof FormState, string>> = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
     if (!form.location.trim()) newErrors.location = 'Location is required';
-    if (!form.price.trim()) newErrors.price = 'Price is required';
-    if (!form.description.trim()) newErrors.description = 'Description is required';
+    if (!form.price.trim() || isNaN(Number(form.price)) || Number(form.price) < 0) {
+      newErrors.price = 'Valid price is required';
+    }
+    if (!form.imageUrl.trim()) newErrors.imageUrl = 'Image URL is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,221 +87,292 @@ export default function PropertyFormModal({
     e.preventDefault();
     if (!validate()) return;
 
+    const featuresArray = form.features
+      .split(',')
+      .map(f => f.trim())
+      .filter(Boolean);
+
+    const propertyData: Property = {
+      id: property?.id || generateId(),
+      name: form.name.trim(),
+      location: form.location.trim(),
+      price: BigInt(Math.round(Number(form.price))),
+      propertyType: form.propertyType as PropertyType,
+      category: form.category as PropertyCategory,
+      imageUrl: form.imageUrl.trim(),
+      sqft: BigInt(Math.round(Number(form.sqft) || 0)),
+      bedrooms: BigInt(Math.round(Number(form.bedrooms) || 0)),
+      features: featuresArray,
+      createdAt: property?.createdAt ?? BigInt(Date.now()),
+    };
+
     try {
-      if (isEditing && property) {
-        await updateProperty.mutateAsync({
-          id: property.id,
-          ...form,
-        });
+      if (isEditing) {
+        await updateProperty.mutateAsync({ id: propertyData.id, property: propertyData });
       } else {
-        await createProperty.mutateAsync(form);
+        await createProperty.mutateAsync(propertyData);
       }
       onClose();
-    } catch {
-      // error shown via mutation state
+    } catch (err) {
+      console.error('Failed to save property:', err);
     }
   };
 
-  const inputClass =
-    'w-full px-3 py-2.5 rounded text-sm input-luxury focus:outline-none';
+  const set = (key: keyof FormState) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setForm(f => ({ ...f, [key]: e.target.value }));
+    if (errors[key]) setErrors(err => ({ ...err, [key]: undefined }));
+  };
 
-  const mutationError = createProperty.error || updateProperty.error;
+  const inputStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(198,167,94,0.2)',
+    color: '#F5F0E8',
+    borderRadius: 4,
+    padding: '0.625rem 0.75rem',
+    fontSize: '0.875rem',
+    width: '100%',
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.75rem',
+    fontWeight: 500,
+    color: 'rgba(245,240,232,0.6)',
+    marginBottom: '0.375rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  };
+
+  const errorStyle: React.CSSProperties = {
+    color: '#DC143C',
+    fontSize: '0.7rem',
+    marginTop: '0.25rem',
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent
-        className="max-w-lg p-0 border-0"
-        style={{
-          background: '#111111',
-          border: '1px solid rgba(255,215,0,0.2)',
-        }}
+        className="max-w-2xl p-0 border-0 max-h-[90vh] overflow-y-auto"
+        style={{ background: '#111111', border: '1px solid rgba(198,167,94,0.2)' }}
       >
-        <DialogHeader className="px-6 pt-6 pb-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle
-              className="font-serif font-bold text-lg"
-              style={{ color: '#F5F0E8' }}
-            >
-              {isEditing ? 'Edit Property' : 'Add New Property'}
-            </DialogTitle>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded transition-all duration-200"
-              style={{ color: 'rgba(245,240,232,0.5)' }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = '#FFD700';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color =
-                  'rgba(245,240,232,0.5)';
-              }}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+        <DialogHeader
+          className="px-6 pt-6 pb-4 sticky top-0 z-10"
+          style={{ background: '#111111', borderBottom: '1px solid rgba(198,167,94,0.1)' }}
+        >
+          <DialogTitle className="font-serif font-bold text-lg" style={{ color: '#F5F0E8' }}>
+            {isEditing ? 'Edit Property' : 'Add New Property'}
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-4">
-          {/* Title */}
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          {/* Name */}
           <div>
-            <label
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: 'rgba(245,240,232,0.6)' }}
-            >
-              Property Title *
-            </label>
+            <label style={labelStyle}>Property Name *</label>
             <input
               type="text"
-              placeholder="e.g. Imperial Penthouse, Connaught Place"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className={inputClass}
+              value={form.name}
+              onChange={set('name')}
+              placeholder="e.g. Villa Serenova"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
             />
-            {errors.title && (
-              <p className="text-xs mt-1" style={{ color: '#DC143C' }}>
-                {errors.title}
-              </p>
-            )}
+            {errors.name && <p style={errorStyle}>{errors.name}</p>}
           </div>
 
-          {/* Location + Price */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Location */}
+          <div>
+            <label style={labelStyle}>Location *</label>
+            <input
+              type="text"
+              value={form.location}
+              onChange={set('location')}
+              placeholder="e.g. Monterra Heights, Monterra City"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
+            />
+            {errors.location && <p style={errorStyle}>{errors.location}</p>}
+          </div>
+
+          {/* Price */}
+          <div>
+            <label style={labelStyle}>Price (USD) *</label>
+            <input
+              type="number"
+              value={form.price}
+              onChange={set('price')}
+              placeholder="e.g. 4200000"
+              min="0"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
+            />
+            {errors.price && <p style={errorStyle}>{errors.price}</p>}
+          </div>
+
+          {/* Type & Category */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-              <label
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: 'rgba(245,240,232,0.6)' }}
+              <label style={labelStyle}>Property Type</label>
+              <select
+                value={form.propertyType}
+                onChange={set('propertyType')}
+                style={{ ...inputStyle, cursor: 'pointer' }}
               >
-                Location *
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. South Delhi"
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className={inputClass}
-              />
-              {errors.location && (
-                <p className="text-xs mt-1" style={{ color: '#DC143C' }}>
-                  {errors.location}
-                </p>
-              )}
+                <option value="villa">Villa</option>
+                <option value="penthouse">Penthouse</option>
+                <option value="land">Land</option>
+                <option value="commercial">Commercial</option>
+              </select>
             </div>
             <div>
-              <label
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: 'rgba(245,240,232,0.6)' }}
+              <label style={labelStyle}>Category</label>
+              <select
+                value={form.category}
+                onChange={set('category')}
+                style={{ ...inputStyle, cursor: 'pointer' }}
               >
-                Price *
-              </label>
+                <option value="featured">Featured</option>
+                <option value="land">Land</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Sqft & Bedrooms */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>Area (sq ft)</label>
               <input
-                type="text"
-                placeholder="e.g. \u20B912 Cr"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className={inputClass}
+                type="number"
+                value={form.sqft}
+                onChange={set('sqft')}
+                placeholder="e.g. 4500"
+                min="0"
+                style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
               />
-              {errors.price && (
-                <p className="text-xs mt-1" style={{ color: '#DC143C' }}>
-                  {errors.price}
-                </p>
-              )}
+            </div>
+            <div>
+              <label style={labelStyle}>Bedrooms</label>
+              <input
+                type="number"
+                value={form.bedrooms}
+                onChange={set('bedrooms')}
+                placeholder="e.g. 4"
+                min="0"
+                style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
+              />
             </div>
           </div>
 
           {/* Image URL */}
           <div>
-            <label
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: 'rgba(245,240,232,0.6)' }}
-            >
-              Image URL
-            </label>
+            <label style={labelStyle}>Image URL *</label>
             <input
-              type="url"
-              placeholder="https://example.com/property-image.jpg"
+              type="text"
               value={form.imageUrl}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              className={inputClass}
+              onChange={set('imageUrl')}
+              placeholder="e.g. /assets/generated/property-villa-1.dim_800x600.webp"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
             />
+            {errors.imageUrl && <p style={errorStyle}>{errors.imageUrl}</p>}
           </div>
 
-          {/* Description */}
+          {/* Features */}
           <div>
-            <label
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: 'rgba(245,240,232,0.6)' }}
-            >
-              Description *
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Describe the property — size, features, highlights..."
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className={`${inputClass} resize-none`}
+            <label style={labelStyle}>Features (comma-separated)</label>
+            <input
+              type="text"
+              value={form.features}
+              onChange={set('features')}
+              placeholder="e.g. 4 BHK, Infinity Pool, Smart Home"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = '#C6A75E')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(198,167,94,0.2)')}
             />
-            {errors.description && (
-              <p className="text-xs mt-1" style={{ color: '#DC143C' }}>
-                {errors.description}
-              </p>
-            )}
           </div>
-
-          {/* Error */}
-          {mutationError && (
-            <div
-              className="flex items-center gap-2 p-3 rounded text-xs"
-              style={{
-                background: 'rgba(220,20,60,0.1)',
-                border: '1px solid rgba(220,20,60,0.3)',
-                color: '#DC143C',
-              }}
-            >
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              {isEditing
-                ? 'Failed to update property. Please try again.'
-                : 'Failed to create property. Please try again.'}
-            </div>
-          )}
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem' }}>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded text-sm font-medium transition-all duration-300"
+              disabled={isSaving}
               style={{
-                border: '1px solid rgba(255,215,0,0.2)',
+                flex: 1,
+                padding: '0.75rem',
+                borderRadius: 4,
+                border: '1px solid rgba(198,167,94,0.2)',
+                background: 'transparent',
                 color: 'rgba(245,240,232,0.7)',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded text-sm font-bold transition-all duration-300 disabled:opacity-60"
+              disabled={isSaving}
               style={{
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-                color: '#0A0A0A',
+                flex: 1,
+                padding: '0.75rem',
+                borderRadius: 4,
+                border: 'none',
+                background: '#C6A75E',
+                color: '#111111',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                opacity: isSaving ? 0.7 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
               }}
             >
-              {isPending ? (
+              {isSaving ? (
                 <>
                   <div
-                    className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
-                    style={{ borderColor: '#0A0A0A', borderTopColor: 'transparent' }}
+                    style={{
+                      width: 14,
+                      height: 14,
+                      border: '2px solid #111111',
+                      borderTopColor: 'transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
                   />
-                  {isEditing ? 'Saving...' : 'Creating...'}
+                  Saving...
                 </>
-              ) : isEditing ? (
-                'Save Changes'
               ) : (
-                'Add Property'
+                isEditing ? 'Save Changes' : 'Add Property'
               )}
             </button>
           </div>
         </form>
+
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          select option {
+            background: #111111;
+            color: #F5F0E8;
+          }
+        `}</style>
       </DialogContent>
     </Dialog>
   );

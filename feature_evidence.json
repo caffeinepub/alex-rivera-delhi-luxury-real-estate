@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-in-the-6th-section-of-the-page-locate-the-parent-container-at-xpath-html-1-body-1-div-1-div-6-div-1-div-1-and-its-two-child-span-elements-xpath-span-1-and-span-2-stack-the-two-spans-vertically-so-each-appears-on-its-own-line-display-block-or-flex-direction-column-on-the-parent-implement-a-css-animation-that-cycles-through-the-spans-one-at-a-time-each-span-fades-slides-in-stays-visible-for-2-seconds-then-fades-slides-out-before-the-next-one-appears-creating-a-continuous-rotating-cycling-text-effect-use-css-keyframe-animations-with-an-appropriate-staggered-animation-delay-so-span-2-begins-its-cycle-after-span-1-has-completed-its-display-window-the-transition-between-spans-must-be-smooth-opacity-translatey-approximately-0-4s-ease-do-not-alter-any-other-elements-outside-this-container",
-      "featureTitle": "In the 6th section of the page, locate the parent container at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1] and its two child <span> elements (XPath span[1] and span[2]). Stack the two spans vertically so each appears on its own line (display: block or flex-direction: column on the parent). Implement a CSS animation that cycles through the spans one at a time: each span fades/slides in, stays visible for ~2 seconds, then fades/slides out before the next one appears, creating a continuous rotating/cycling text effect. Use CSS keyframe animations with an appropriate staggered animation-delay so span[2] begins its cycle after span[1] has completed its display window. The transition between spans must be smooth (opacity + translateY, approximately 0.4s ease). Do not alter any other elements outside this container.",
+      "featureId": "feature-hardcode-15-demo-properties-3-per-city-delhi-gurgaon-noida-aerocity-ghaziabad-in-localstorage-with-realistic-ncr-data-properties-must-persist-across-f5-page-refreshes-each-property-must-have-id-city-title-price-raw-number-location-3-photo-urls-enquiry-count-lat-lng-if-localstorage-has-no-properties-on-first-load-seed-it-with-these-15-defaults",
+      "featureTitle": "Hardcode 15 demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad) in localStorage with realistic NCR data. Properties must persist across F5 page refreshes. Each property must have: id, city, title, price (raw number), location, 3 photo URLs, enquiry count, lat, lng. If localStorage has no properties on first load, seed it with these 15 defaults.",
       "files": [
-        "frontend/src/components/Contact.tsx",
-        "frontend/src/index.css"
+        "frontend/src/types/property.ts",
+        "frontend/src/utils/propertyStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,7 +18,218 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-30"
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-utility-function-formatindianprice-n-number-string-in-frontend-src-utils-formatindianprice-ts-that-converts-a-raw-integer-e-g-2800000000-to-indian-number-format-with-symbol-e-g-28-00-00-000-use-this-formatter-everywhere-prices-are-displayed-property-cards-property-detail-pages-admin-panel-and-any-other-price-display",
+      "featureTitle": "Implement a utility function `formatIndianPrice(n: number): string` in `frontend/src/utils/formatIndianPrice.ts` that converts a raw integer (e.g. 2800000000) to Indian number format with ₹ symbol (e.g. ₹28,00,00,000). Use this formatter everywhere prices are displayed — property cards, property detail pages, admin panel, and any other price display.",
+      "files": [
+        "frontend/src/components/PropertyCard.tsx",
+        "frontend/src/utils/formatIndianPrice.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-frontend-src-utils-propertystorage-ts-with-functions-getproperties-property-saveproperty-p-property-void-deleteproperty-id-number-void-updateproperty-p-property-void-this-module-reads-writes-to-localstorage-key-dlx-properties-on-getproperties-if-localstorage-is-empty-seed-with-the-15-hardcoded-defaults-and-return-them-define-the-property-type-in-frontend-src-types-property-ts",
+      "featureTitle": "Implement `frontend/src/utils/propertyStorage.ts` with functions: `getProperties(): Property[]`, `saveProperty(p: Property): void`, `deleteProperty(id: number): void`, `updateProperty(p: Property): void`. This module reads/writes to localStorage key `dlx_properties`. On `getProperties`, if localStorage is empty, seed with the 15 hardcoded defaults and return them. Define the `Property` type in `frontend/src/types/property.ts`.",
+      "files": [
+        "frontend/src/utils/propertyStorage.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-rebuild-frontend-src-components-properties-tsx-to-1-load-properties-from-propertystorage-not-backend-canister-2-render-city-filter-tabs-all-delhi-gurgaon-noida-aerocity-ghaziabad-clicking-a-city-tab-filters-the-displayed-list-to-only-that-city-s-properties-3-display-filtered-properties-as-a-responsive-grid-of-propertycards-4-each-card-links-to-the-property-detail-page-property-id-id",
+      "featureTitle": "Rebuild `frontend/src/components/Properties.tsx` to: (1) load properties from propertyStorage (not backend canister), (2) render city filter tabs [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad] — clicking a city tab filters the displayed list to only that city's properties, (3) display filtered properties as a responsive grid of PropertyCards, (4) each card links to the property detail page `/property?id={id}`.",
+      "files": [
+        "frontend/src/components/Properties.tsx",
+        "frontend/src/components/PropertyCard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-frontend-src-pages-propertypage-tsx-as-a-full-property-detail-page-it-must-1-read-the-property-id-from-url-query-params-id-x-2-load-the-property-from-propertystorage-3-display-title-formatted-price-location-photo-carousel-swipeable-on-mobile-lat-lng-as-a-view-on-google-maps-button-linking-to-https-maps-google-com-q-lat-lng-full-specs-and-enquiry-count-4-include-a-top-left-back-button-that-calls-window-history-back-register-this-page-as-the-property-route-in-frontend-src-app-tsx",
+      "featureTitle": "Implement `frontend/src/pages/PropertyPage.tsx` as a full property detail page. It must: (1) read the property id from URL query params (`?id=X`), (2) load the property from propertyStorage, (3) display title, formatted price, location, photo carousel (swipeable on mobile), lat/lng as a 'View on Google Maps' button linking to `https://maps.google.com/?q={lat},{lng}`, full specs, and enquiry count, (4) include a top-left back button that calls `window.history.back()`. Register this page as the `/property` route in `frontend/src/App.tsx`.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/PropertyPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-redesign-the-site-with-a-professional-navy-theme-primary-color-navy-1e3a8a-background-white-f8fafc-borders-dividers-light-gray-e5e7eb-replace-all-gold-glassmorphism-3d-effects-with-clean-flat-design-use-inter-or-system-ui-fonts-throughout-remove-playfair-display-update-frontend-src-index-css-and-frontend-tailwind-config-js-to-reflect-these-design-tokens",
+      "featureTitle": "Redesign the site with a professional navy theme: primary color navy #1E3A8A, background white #F8FAFC, borders/dividers light gray #E5E7EB. Replace all gold/glassmorphism/3D effects with clean flat design. Use Inter or system-ui fonts throughout — remove Playfair Display. Update `frontend/src/index.css` and `frontend/tailwind.config.js` to reflect these design tokens.",
+      "files": [
+        "frontend/src/components/Footer.tsx",
+        "frontend/src/components/Navbar.tsx",
+        "frontend/src/components/PropertyCard.tsx",
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-frontend-src-components-hero-tsx-to-1-use-a-delhi-skyline-background-image-2-display-headline-trusted-delhi-agent-50-deals-closed-3-show-the-rera-badge-rera-registered-agent-hrera-pkl-2026-00123-4-show-credentials-bar-5-years-50-happy-clients-credai-member-5-use-the-navy-color-scheme",
+      "featureTitle": "Update `frontend/src/components/Hero.tsx` to: (1) use a Delhi skyline background image, (2) display headline 'Trusted Delhi Agent | 50+ Deals Closed', (3) show the RERA badge 'RERA Registered Agent – HRERA-PKL-2026-00123', (4) show credentials bar '5+ Years | 50+ Happy Clients | CREDAI Member', (5) use the navy color scheme.",
+      "files": [
+        "frontend/src/components/Hero.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-frontend-src-components-testimonialsrotator-tsx-to-include-this-testimonial-rohit-sharma-ceo-gurgaon-closed-25cr-deal-in-30-days-along-with-at-least-2-other-realistic-ncr-client-testimonials-maintain-the-existing-rotator-carousel-ux",
+      "featureTitle": "Update `frontend/src/components/TestimonialsRotator.tsx` to include this testimonial: 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!' along with at least 2 other realistic NCR client testimonials. Maintain the existing rotator/carousel UX.",
+      "files": [
+        "frontend/src/components/TestimonialsRotator.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-the-site-fully-mobile-first-1-add-a-fixed-bottom-action-bar-60px-tall-full-width-with-primary-cta-buttons-e-g-calculate-emi-and-find-my-property-visible-on-mobile-only-2-ensure-all-interactive-buttons-and-touch-targets-are-at-minimum-48px-tall-wide-3-ensure-the-property-photo-carousel-on-the-detail-page-supports-touch-swipe-gestures",
+      "featureTitle": "Make the site fully mobile-first: (1) add a fixed bottom action bar (60px tall, full width) with primary CTA buttons (e.g., 'Calculate EMI' and 'Find My Property') — visible on mobile only, (2) ensure all interactive buttons and touch targets are at minimum 48px tall/wide, (3) ensure the property photo carousel on the detail page supports touch swipe gestures.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/MobileBottomBar.tsx",
+        "frontend/src/components/Navbar.tsx",
+        "frontend/src/components/PropertyCard.tsx",
+        "frontend/src/pages/PropertyPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-rebuild-frontend-src-pages-adminpanel-tsx-to-1-require-internet-identity-login-use-the-existing-useinternetidentity-hook-2-after-login-show-a-crud-interface-for-managing-properties-from-propertystorage-list-all-properties-in-a-table-3-provide-add-edit-delete-actions-4-the-property-form-must-include-city-dropdown-delhi-gurgaon-noida-aerocity-ghaziabad-title-price-raw-number-input-live-previewed-as-formatted-indian-price-location-lat-lng-3-photo-url-fields-enquiry-count-5-saving-a-property-immediately-updates-localstorage-so-it-s-visible-on-the-frontend-listings-without-page-reload",
+      "featureTitle": "Rebuild `frontend/src/pages/AdminPanel.tsx` to: (1) require Internet Identity login (use the existing useInternetIdentity hook), (2) after login, show a CRUD interface for managing properties from propertyStorage — list all properties in a table, (3) provide Add/Edit/Delete actions, (4) the property form must include: City dropdown [Delhi, Gurgaon, Noida, Aerocity, Ghaziabad], Title, Price (raw number input, live-previewed as formatted Indian price), Location, Lat, Lng, 3 Photo URL fields, Enquiry Count, (5) saving a property immediately updates localStorage so it's visible on the frontend listings without page reload.",
+      "files": [
+        "frontend/src/pages/AdminPanel.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-frontend-src-app-tsx-routing-to-register-the-property-route-rendering-propertypage-and-ensure-the-admin-route-renders-adminpanel-both-routes-must-be-accessible-via-direct-url-navigation",
+      "featureTitle": "Update `frontend/src/App.tsx` routing to register the `/property` route (rendering PropertyPage) and ensure the `/admin` route renders AdminPanel. Both routes must be accessible via direct URL navigation.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
       ],
       "confidence": "high"
     }

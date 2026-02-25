@@ -1,253 +1,103 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
-  "summary": "Luxury Delhi real estate portfolio website for Alex Rivera (top agent). Dark gold-crimson theme (#0A0A0A/#FFD700/#DC143C). React + TypeScript on Internet Computer (Motoko backend). Internet Identity auth for admin panel. Delhi/NCR focus. Phase 1 & 2 complete. Visual Luxury Overhaul in progress: Playfair Display + Montserrat fonts, glassmorphism (blur 20px) on all cards/buttons, hero black-purple gradient + gold particles, Indian price notation (₹X,XX,XX,XXX) everywhere, micro-animations, loading screen, scroll progress bar, gold key cursor, 4rem card spacing. Phase 2 (GSAP, Hindi toggle) and Phase 3 (Three.js, EMI calc, 3D cards, ticker, confetti) deferred to next build.",
+  "projectStateVersion": 3,
+  "summary": "Delhi Luxury Empire real estate agent portfolio website (delhiluxuryempire-8or.caffeine.xyz). Frontend-focused build with 15 hardcoded demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad), localStorage persistence, working back button, city filters, Indian price formatting (₹28,00,00,000), professional navy design, agent credentials/RERA badge, mobile-first layout, and admin panel with Internet Identity login + full CRUD.",
   "architectural_notes": [
-    "React + TypeScript frontend on Internet Computer (Motoko backend canister)",
-    "Internet Identity (passkey) for /admin authentication — no hardcoded passwords",
-    "Dark gold-crimson theme: #0A0A0A bg, #FFD700 gold, #DC143C accents; Tailwind CSS",
-    "WhatsApp deep links only (href=wa.me) — no messaging API",
-    "City focus: Delhi/NCR (CP, GK2, Aerocity, Gurgaon, South Delhi)",
-    "GSAP used for hero parallax (20% scroll speed), section fade-up (0.2s stagger), property hover (1.05x + gold glow), CTA pulse (1.02x infinite)",
-    "Golden cursor trail: #FFD700 12px custom cursor, 3-particle spark trail, 1.5x on hover",
-    "Bilingual EN/Hindi toggle (Noto Sans Devanagari), preference stored in localStorage",
-    "Three.js used for: interactive 3D Delhi skyline hero (CP/GK2/Aerocity towers, 8 orbiting penthouses, mouse parallax, golden Diwali particles) and 3D flip property cards (front: image+price, back: details+360° Tour, magnet tilt-on-hover)",
-    "EMI Calculator sticky sidebar: inputs property price, 20% downpayment, 20yr tenure; outputs monthly EMI + total interest with animated number counters and gold particle burst"
+    "Data persistence via localStorage (no Motoko backend in current phase); 15 properties hardcoded as seed data",
+    "Authentication: Internet Identity only for admin panel (/admin)",
+    "Price stored as raw integer (e.g. 2800000000) and formatted to Indian number format (₹28,00,00,000) on display"
   ],
   "known_issues": [
-    "Initial full build attempt failed — too large/complex for single prompt; using phased approach instead"
+    "Previous Motoko backend builds failed twice due to complexity; current phase uses localStorage instead"
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- Delhi city skyline panoramic photo with modern buildings and clear sky, suitable for a hero background (delhi-skyline-hero.dim_1920x1080.png)",
   "existing_features": [
     {
-      "id": "feature-set-up-the-dark-gold-crimson-visual-theme-across-the-entire-application-background-0a0a0a-gold-accent-ffd700-crimson-accent-dc143c-apply-consistent-typography-bold-headings-clean-sans-serif-body-spacing-and-color-usage-in-all-components-the-design-should-feel-premium-and-luxury-focused-bespoke-not-generic",
-      "title": "Set up the dark gold-crimson visual theme across the entire application: background #0A0A0A, gold accent #FFD700, crimson accent #DC143C. Apply consistent typography (bold headings, clean sans-serif body), spacing, and color usage in all components. The design should feel premium and luxury-focused — bespoke, not generic.",
+      "id": "feature-hardcode-15-demo-properties-3-per-city-delhi-gurgaon-noida-aerocity-ghaziabad-in-localstorage-with-realistic-ncr-data-properties-must-persist-across-f5-page-refreshes-each-property-must-have-id-city-title-price-raw-number-location-3-photo-urls-enquiry-count-lat-lng-if-localstorage-has-no-properties-on-first-load-seed-it-with-these-15-defaults",
+      "title": "Hardcode 15 demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad) in localStorage with realistic NCR data. Properties must persist across F5 page refreshes. Each property must have: id, city, title, price (raw number), location, 3 photo URLs, enquiry count, lat, lng. If localStorage has no properties on first load, seed it with these 15 defaults.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-a-hero-section-with-a-static-delhi-skyline-parallax-background-image-the-tagline-unlock-delhi-empires-a-sub-headline-establishing-alex-rivera-as-delhi-s-top-luxury-real-estate-agent-and-a-whatsapp-cta-button-that-opens-a-whatsapp-deep-link-https-wa-me-91xxxxxxxxx-text-hi-20alex-2c-20i-27m-20interested-20in-20a-20delhi-20luxury-20property-in-a-new-tab",
-      "title": "Build a Hero section with a static Delhi skyline parallax background image, the tagline 'Unlock Delhi Empires', a sub-headline establishing Alex Rivera as Delhi's top luxury real estate agent, and a WhatsApp CTA button that opens a WhatsApp deep link (https://wa.me/91xxxxxxxxx?text=Hi%20Alex%2C%20I%27m%20interested%20in%20a%20Delhi%20luxury%20property) in a new tab.",
+      "id": "feature-implement-a-utility-function-formatindianprice-n-number-string-in-frontend-src-utils-formatindianprice-ts-that-converts-a-raw-integer-e-g-2800000000-to-indian-number-format-with-symbol-e-g-28-00-00-000-use-this-formatter-everywhere-prices-are-displayed-property-cards-property-detail-pages-admin-panel-and-any-other-price-display",
+      "title": "Implement a utility function `formatIndianPrice(n: number): string` in `frontend/src/utils/formatIndianPrice.ts` that converts a raw integer (e.g. 2800000000) to Indian number format with ₹ symbol (e.g. ₹28,00,00,000). Use this formatter everywhere prices are displayed — property cards, property detail pages, admin panel, and any other price display.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-a-properties-section-displaying-a-responsive-grid-of-6-hardcoded-delhi-ncr-luxury-listings-each-listing-card-must-show-a-property-image-use-image-url-property-title-location-e-g-south-delhi-gurgaon-cp-aerocity-price-in-indian-rupees-and-a-view-button-cards-must-have-a-hover-zoom-effect-on-the-image-the-6-sample-listings-should-cover-a-range-of-delhi-ncr-locations-and-price-points-2cr-25cr-range-with-descriptive-titles",
-      "title": "Build a Properties section displaying a responsive grid of 6 hardcoded Delhi/NCR luxury listings. Each listing card must show: a property image (use image URL), property title, location (e.g., South Delhi, Gurgaon, CP, Aerocity), price in Indian Rupees (₹), and a 'View' button. Cards must have a hover zoom effect on the image. The 6 sample listings should cover a range of Delhi NCR locations and price points (₹2Cr–₹25Cr range) with descriptive titles.",
+      "id": "feature-implement-frontend-src-utils-propertystorage-ts-with-functions-getproperties-property-saveproperty-p-property-void-deleteproperty-id-number-void-updateproperty-p-property-void-this-module-reads-writes-to-localstorage-key-dlx-properties-on-getproperties-if-localstorage-is-empty-seed-with-the-15-hardcoded-defaults-and-return-them-define-the-property-type-in-frontend-src-types-property-ts",
+      "title": "Implement `frontend/src/utils/propertyStorage.ts` with functions: `getProperties(): Property[]`, `saveProperty(p: Property): void`, `deleteProperty(id: number): void`, `updateProperty(p: Property): void`. This module reads/writes to localStorage key `dlx_properties`. On `getProperties`, if localStorage is empty, seed with the 15 hardcoded defaults and return them. Define the `Property` type in `frontend/src/types/property.ts`.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-an-about-section-featuring-alex-rivera-s-professional-bio-50-deals-closed-500cr-portfolio-delhi-ncr-specialist-and-3-client-testimonials-each-testimonial-should-include-a-client-name-a-short-quote-praising-alex-and-a-star-rating",
-      "title": "Build an About section featuring Alex Rivera's professional bio (50+ deals closed, ₹500Cr+ portfolio, Delhi NCR specialist) and 3 client testimonials. Each testimonial should include a client name, a short quote praising Alex, and a star rating.",
+      "id": "feature-rebuild-frontend-src-components-properties-tsx-to-1-load-properties-from-propertystorage-not-backend-canister-2-render-city-filter-tabs-all-delhi-gurgaon-noida-aerocity-ghaziabad-clicking-a-city-tab-filters-the-displayed-list-to-only-that-city-s-properties-3-display-filtered-properties-as-a-responsive-grid-of-propertycards-4-each-card-links-to-the-property-detail-page-property-id-id",
+      "title": "Rebuild `frontend/src/components/Properties.tsx` to: (1) load properties from propertyStorage (not backend canister), (2) render city filter tabs [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad] — clicking a city tab filters the displayed list to only that city's properties, (3) display filtered properties as a responsive grid of PropertyCards, (4) each card links to the property detail page `/property?id={id}`.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-a-contact-section-with-a-lead-capture-form-containing-fields-full-name-phone-number-email-budget-dropdown-under-2cr-2-5cr-5-10cr-10cr-and-message-on-submit-the-lead-is-saved-to-the-motoko-backend-include-a-whatsapp-contact-button-as-an-alternative-cta",
-      "title": "Build a Contact section with a lead capture form containing fields: Full Name, Phone Number, Email, Budget (dropdown: Under ₹2Cr, ₹2–5Cr, ₹5–10Cr, ₹10Cr+), and Message. On submit, the lead is saved to the Motoko backend. Include a WhatsApp contact button as an alternative CTA.",
+      "id": "feature-implement-frontend-src-pages-propertypage-tsx-as-a-full-property-detail-page-it-must-1-read-the-property-id-from-url-query-params-id-x-2-load-the-property-from-propertystorage-3-display-title-formatted-price-location-photo-carousel-swipeable-on-mobile-lat-lng-as-a-view-on-google-maps-button-linking-to-https-maps-google-com-q-lat-lng-full-specs-and-enquiry-count-4-include-a-top-left-back-button-that-calls-window-history-back-register-this-page-as-the-property-route-in-frontend-src-app-tsx",
+      "title": "Implement `frontend/src/pages/PropertyPage.tsx` as a full property detail page. It must: (1) read the property id from URL query params (`?id=X`), (2) load the property from propertyStorage, (3) display title, formatted price, location, photo carousel (swipeable on mobile), lat/lng as a 'View on Google Maps' button linking to `https://maps.google.com/?q={lat},{lng}`, full specs, and enquiry count, (4) include a top-left back button that calls `window.history.back()`. Register this page as the `/property` route in `frontend/src/App.tsx`.",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-an-admin-panel-at-the-admin-route-protected-by-internet-identity-authentication-the-panel-must-allow-authenticated-admin-users-to-view-all-properties-in-a-table-add-a-new-property-title-price-image-url-location-description-edit-any-existing-property-and-delete-a-property-also-display-a-leads-table-showing-all-contact-form-submissions-and-provide-a-download-csv-button-that-exports-all-leads-as-a-csv-file-name-phone-email-budget-message-date",
-      "title": "Build an Admin Panel at the /admin route protected by Internet Identity authentication. The panel must allow authenticated admin users to: view all properties in a table, add a new property (title, price, image URL, location, description), edit any existing property, and delete a property. Also display a leads table showing all contact form submissions, and provide a 'Download CSV' button that exports all leads as a CSV file (name, phone, email, budget, message, date).",
+      "id": "feature-redesign-the-site-with-a-professional-navy-theme-primary-color-navy-1e3a8a-background-white-f8fafc-borders-dividers-light-gray-e5e7eb-replace-all-gold-glassmorphism-3d-effects-with-clean-flat-design-use-inter-or-system-ui-fonts-throughout-remove-playfair-display-update-frontend-src-index-css-and-frontend-tailwind-config-js-to-reflect-these-design-tokens",
+      "title": "Redesign the site with a professional navy theme: primary color navy #1E3A8A, background white #F8FAFC, borders/dividers light gray #E5E7EB. Replace all gold/glassmorphism/3D effects with clean flat design. Use Inter or system-ui fonts throughout — remove Playfair Display. Update `frontend/src/index.css` and `frontend/tailwind.config.js` to reflect these design tokens.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-components-hero-tsx-to-1-use-a-delhi-skyline-background-image-2-display-headline-trusted-delhi-agent-50-deals-closed-3-show-the-rera-badge-rera-registered-agent-hrera-pkl-2026-00123-4-show-credentials-bar-5-years-50-happy-clients-credai-member-5-use-the-navy-color-scheme",
+      "title": "Update `frontend/src/components/Hero.tsx` to: (1) use a Delhi skyline background image, (2) display headline 'Trusted Delhi Agent | 50+ Deals Closed', (3) show the RERA badge 'RERA Registered Agent – HRERA-PKL-2026-00123', (4) show credentials bar '5+ Years | 50+ Happy Clients | CREDAI Member', (5) use the navy color scheme.",
       "reqIds": [
         "REQ-7"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-sticky-navigation-bar-with-the-logo-brand-name-alex-rivera-delhi-luxury-real-estate-navigation-links-to-hero-properties-about-and-contact-sections-smooth-scroll-and-an-admin-link-the-navbar-must-be-transparent-over-the-hero-and-solid-dark-0a0a0a-when-scrolled",
-      "title": "Add a sticky navigation bar with the logo/brand name 'Alex Rivera | Delhi Luxury Real Estate', navigation links to Hero, Properties, About, and Contact sections (smooth scroll), and an Admin link. The navbar must be transparent over the hero and solid dark (#0A0A0A) when scrolled.",
+      "id": "feature-update-frontend-src-components-testimonialsrotator-tsx-to-include-this-testimonial-rohit-sharma-ceo-gurgaon-closed-25cr-deal-in-30-days-along-with-at-least-2-other-realistic-ncr-client-testimonials-maintain-the-existing-rotator-carousel-ux",
+      "title": "Update `frontend/src/components/TestimonialsRotator.tsx` to include this testimonial: 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!' along with at least 2 other realistic NCR client testimonials. Maintain the existing rotator/carousel UX.",
       "reqIds": [
         "REQ-8"
       ],
       "version": 1
     },
     {
-      "id": "feature-integrate-gsap-and-scrolltrigger-plugin-into-the-frontend-add-a-hero-parallax-effect-so-the-delhi-skyline-background-image-scrolls-at-20-the-rate-of-the-page-scroll-i-e-moves-0-2-as-fast-creating-a-smooth-depth-effect-at-60fps",
-      "title": "Integrate GSAP (and ScrollTrigger plugin) into the frontend. Add a hero parallax effect so the Delhi skyline background image scrolls at 20% the rate of the page scroll (i.e., moves 0.2× as fast), creating a smooth depth effect at 60fps.",
+      "id": "feature-make-the-site-fully-mobile-first-1-add-a-fixed-bottom-action-bar-60px-tall-full-width-with-primary-cta-buttons-e-g-calculate-emi-and-find-my-property-visible-on-mobile-only-2-ensure-all-interactive-buttons-and-touch-targets-are-at-minimum-48px-tall-wide-3-ensure-the-property-photo-carousel-on-the-detail-page-supports-touch-swipe-gestures",
+      "title": "Make the site fully mobile-first: (1) add a fixed bottom action bar (60px tall, full width) with primary CTA buttons (e.g., 'Calculate EMI' and 'Find My Property') — visible on mobile only, (2) ensure all interactive buttons and touch targets are at minimum 48px tall/wide, (3) ensure the property photo carousel on the detail page supports touch swipe gestures.",
       "reqIds": [
         "REQ-9"
       ],
       "version": 1
     },
     {
-      "id": "feature-apply-gsap-hover-animations-to-all-property-listing-cards-on-mouseenter-scale-the-card-to-1-05-and-add-a-gold-ffd700-glow-box-shadow-on-mouseleave-smoothly-revert-both-properties",
-      "title": "Apply GSAP hover animations to all property listing cards: on mouseenter, scale the card to 1.05× and add a gold (#FFD700) glow box-shadow; on mouseleave, smoothly revert both properties.",
+      "id": "feature-rebuild-frontend-src-pages-adminpanel-tsx-to-1-require-internet-identity-login-use-the-existing-useinternetidentity-hook-2-after-login-show-a-crud-interface-for-managing-properties-from-propertystorage-list-all-properties-in-a-table-3-provide-add-edit-delete-actions-4-the-property-form-must-include-city-dropdown-delhi-gurgaon-noida-aerocity-ghaziabad-title-price-raw-number-input-live-previewed-as-formatted-indian-price-location-lat-lng-3-photo-url-fields-enquiry-count-5-saving-a-property-immediately-updates-localstorage-so-it-s-visible-on-the-frontend-listings-without-page-reload",
+      "title": "Rebuild `frontend/src/pages/AdminPanel.tsx` to: (1) require Internet Identity login (use the existing useInternetIdentity hook), (2) after login, show a CRUD interface for managing properties from propertyStorage — list all properties in a table, (3) provide Add/Edit/Delete actions, (4) the property form must include: City dropdown [Delhi, Gurgaon, Noida, Aerocity, Ghaziabad], Title, Price (raw number input, live-previewed as formatted Indian price), Location, Lat, Lng, 3 Photo URL fields, Enquiry Count, (5) saving a property immediately updates localStorage so it's visible on the frontend listings without page reload.",
       "reqIds": [
         "REQ-10"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-gsap-scrolltrigger-fade-up-entrance-animations-to-all-major-sections-hero-properties-about-contact-elements-within-each-section-should-animate-in-with-a-staggered-delay-of-0-2s-between-child-items",
-      "title": "Add GSAP ScrollTrigger fade-up entrance animations to all major sections (Hero, Properties, About, Contact). Elements within each section should animate in with a staggered delay of 0.2s between child items.",
+      "id": "feature-update-frontend-src-app-tsx-routing-to-register-the-property-route-rendering-propertypage-and-ensure-the-admin-route-renders-adminpanel-both-routes-must-be-accessible-via-direct-url-navigation",
+      "title": "Update `frontend/src/App.tsx` routing to register the `/property` route (rendering PropertyPage) and ensure the `/admin` route renders AdminPanel. Both routes must be accessible via direct URL navigation.",
       "reqIds": [
         "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-continuous-gsap-pulse-animation-to-all-primary-cta-buttons-whatsapp-button-in-hero-match-properties-button-contact-form-submit-button-buttons-should-scale-to-1-02-and-back-in-an-infinite-loop-using-gsap-s-yoyo-repeat",
-      "title": "Add a continuous GSAP pulse animation to all primary CTA buttons (WhatsApp button in Hero, 'Match Properties' button, Contact form submit button). Buttons should scale to 1.02× and back in an infinite loop using GSAP's yoyo repeat.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-a-golden-custom-cursor-trail-effect-across-the-entire-site-replace-the-default-os-cursor-with-a-gold-ffd700-circle-of-12px-diameter-render-3-spark-particles-that-follow-the-cursor-and-fade-out-using-canvas-or-absolutely-positioned-dom-elements-when-the-cursor-hovers-over-any-button-or-link-the-cursor-grows-to-1-5-its-base-size-18px",
-      "title": "Implement a golden custom cursor trail effect across the entire site. Replace the default OS cursor with a gold (#FFD700) circle of 12px diameter. Render 3 spark particles that follow the cursor and fade out using canvas or absolutely-positioned DOM elements. When the cursor hovers over any button or link, the cursor grows to 1.5× its base size (18px).",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-bilingual-en-hindi-language-toggle-button-in-the-top-right-area-of-the-navbar-load-the-noto-sans-devanagari-google-font-when-hindi-is-selected-translate-the-following-key-strings-hero-tagline-unlock-delhi-empires-hero-sub-headline-properties-section-heading-contact-section-heading-and-all-form-labels-and-button-labels-in-the-contact-form-when-english-is-selected-revert-to-english-strings-persist-the-user-s-language-preference-to-localstorage-under-the-key-lang",
-      "title": "Add a bilingual EN / Hindi language toggle button in the top-right area of the Navbar. Load the 'Noto Sans Devanagari' Google Font. When Hindi is selected, translate the following key strings: Hero tagline ('Unlock Delhi Empires' → 'दिल्ली के साम्राज्य अनलॉक करें'), Hero sub-headline, Properties section heading, Contact section heading, and all form labels and button labels in the Contact form. When English is selected, revert to English strings. Persist the user's language preference to localStorage under the key 'lang'.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-enhanced-property-matcher-sidebar-that-slides-in-from-the-right-side-of-the-screen-the-sidebar-should-be-toggled-via-a-fixed-find-my-property-button-on-the-right-edge-of-the-viewport-inside-the-sidebar-render-1-a-budget-range-filter-1cr-50cr-slider-or-dropdown-options-2-a-location-multi-select-filter-south-delhi-gurgaon-aerocity-and-other-existing-listing-locations-and-3-a-match-properties-button-on-clicking-match-properties-highlight-up-to-3-property-cards-in-the-properties-grid-that-best-match-the-selected-criteria-by-applying-a-gold-border-glow-highlight-use-gsap-for-the-sidebar-slide-in-and-slide-out-animation-the-sidebar-slide-in-out-should-be-smooth",
-      "title": "Add an Enhanced Property Matcher sidebar that slides in from the right side of the screen. The sidebar should be toggled via a fixed 'Find My Property' button on the right edge of the viewport. Inside the sidebar, render: (1) a Budget range filter (₹1Cr – ₹50Cr slider or dropdown options), (2) a Location multi-select filter (South Delhi, Gurgaon, Aerocity, and other existing listing locations), and (3) a 'Match Properties' button. On clicking 'Match Properties', highlight up to 3 property cards in the Properties grid that best match the selected criteria by applying a gold border/glow highlight. Use GSAP for the sidebar slide-in and slide-out animation. The sidebar slide-in/out should be smooth.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-existing-static-hero-section-with-an-interactive-three-js-3d-delhi-skyline-scene-render-at-least-8-distinct-building-silhouettes-representing-cp-gk2-and-aerocity-towers-as-extruded-3d-meshes-with-gold-lit-edges-ffd700-add-8-small-luxury-penthouse-box-meshes-that-slowly-orbit-the-skyline-in-a-circular-path-implement-mouse-parallax-so-the-scene-tilts-subtly-5-as-the-cursor-moves-on-hover-over-any-penthouse-mesh-apply-a-gold-emissive-glow-overlay-a-continuous-golden-particle-system-300-particles-that-drift-upward-simulating-diwali-sparkles-all-existing-hero-text-unlock-delhi-empires-sub-headline-whatsapp-cta-gsap-pulse-on-the-cta-button-and-bilingual-en-hindi-support-must-remain-rendered-as-html-overlaid-on-the-three-js-canvas",
-      "title": "Replace the existing static Hero section with an interactive Three.js 3D Delhi skyline scene. Render at least 8 distinct building silhouettes representing CP, GK2, and Aerocity towers as extruded 3D meshes with gold-lit edges (#FFD700). Add 8 small luxury penthouse box meshes that slowly orbit the skyline in a circular path. Implement mouse parallax so the scene tilts subtly (±5°) as the cursor moves. On hover over any penthouse mesh, apply a gold emissive glow. Overlay a continuous golden particle system (300+ particles) that drift upward simulating Diwali sparkles. All existing hero text ('Unlock Delhi Empires', sub-headline, WhatsApp CTA), GSAP pulse on the CTA button, and bilingual EN/Hindi support must remain rendered as HTML overlaid on the Three.js canvas.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-each-of-the-6-property-listing-cards-with-a-3d-flip-card-the-front-face-shows-the-property-image-and-price-matching-existing-card-design-the-back-face-shows-the-full-property-details-title-location-description-and-a-360-tour-button-non-functional-placeholder-link-the-card-flips-on-click-add-a-magnet-tilt-on-hover-effect-so-the-card-tilts-toward-the-cursor-position-max-15-using-css-3d-transforms-or-three-js-preserve-the-existing-gold-border-glow-highlight-from-the-propertymatcher-and-the-gsap-hover-scale-animation-on-the-outer-wrapper-the-existing-propertymodal-should-still-open-when-the-360-tour-button-on-the-back-face-is-clicked-or-provide-a-suitable-equivalent",
-      "title": "Replace each of the 6 property listing cards with a 3D flip card. The front face shows the property image and price (matching existing card design). The back face shows the full property details (title, location, description) and a '360° Tour' button (non-functional placeholder link). The card flips on click. Add a magnet tilt-on-hover effect so the card tilts toward the cursor position (max ±15°) using CSS 3D transforms or Three.js. Preserve the existing gold border/glow highlight from the PropertyMatcher and the GSAP hover scale animation on the outer wrapper. The existing PropertyModal should still open when the '360° Tour' button on the back face is clicked or provide a suitable equivalent.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-sticky-emi-calculator-sidebar-that-is-fixed-to-the-right-edge-of-the-viewport-below-the-find-my-property-button-the-sidebar-toggles-open-closed-via-a-labeled-emi-calc-tab-button-inside-the-sidebar-render-1-a-property-price-input-in-crores-default-5-2-a-downpayment-percentage-input-default-20-3-a-loan-tenure-selector-10-15-20-25-30-years-default-20-4-an-interest-rate-input-default-8-5-p-a-on-any-input-change-calculate-and-display-monthly-emi-and-total-interest-payable-using-the-standard-emi-formula-animate-the-output-numbers-counting-up-to-their-new-values-using-gsap-or-requestanimationframe-when-the-emi-result-is-first-displayed-or-updated-trigger-a-small-burst-of-gold-particles-ffd700-near-the-output-values",
-      "title": "Add a sticky EMI Calculator sidebar that is fixed to the right edge of the viewport (below the 'Find My Property' button). The sidebar toggles open/closed via a labeled 'EMI Calc' tab button. Inside the sidebar render: (1) a Property Price input (in ₹ Crores, default 5), (2) a Downpayment percentage input (default 20%), (3) a Loan Tenure selector (10, 15, 20, 25, 30 years; default 20), (4) an interest rate input (default 8.5% p.a.). On any input change, calculate and display Monthly EMI and Total Interest Payable using the standard EMI formula. Animate the output numbers counting up to their new values using GSAP or requestAnimationFrame. When the EMI result is first displayed or updated, trigger a small burst of gold particles (#FFD700) near the output values.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-live-market-ticker-bar-at-the-very-top-of-the-page-above-the-navbar-the-ticker-displays-the-text-delhi-prices-12-yoy-gurgaon-15-yoy-aerocity-18-yoy-south-delhi-10-yoy-noida-9-yoy-as-a-continuously-scrolling-horizontal-marquee-style-the-text-with-a-gold-gradient-ffd700-to-ffa500-on-a-near-black-background-111-the-ticker-height-should-be-compact-approximately-32px-the-navbar-s-top-offset-must-account-for-the-ticker-so-it-does-not-overlap-content",
-      "title": "Add a Live Market Ticker bar at the very top of the page, above the Navbar. The ticker displays the text: 'Delhi Prices +12% YoY  |  Gurgaon +15% YoY  |  Aerocity +18% YoY  |  South Delhi +10% YoY  |  Noida +9% YoY' as a continuously scrolling horizontal marquee. Style the text with a gold gradient (#FFD700 to #FFA500) on a near-black background (#111). The ticker height should be compact (approximately 32px). The Navbar's top offset must account for the ticker so it does not overlap content.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-after-a-successful-contact-form-submission-lead-saved-to-backend-display-a-full-screen-deal-locked-victory-overlay-on-top-of-all-page-content-the-overlay-must-1-trigger-a-full-screen-gold-confetti-burst-animation-200-confetti-pieces-in-gold-ffd700-crimson-dc143c-and-white-colors-using-a-canvas-based-or-dom-based-confetti-library-2-show-the-text-deal-locked-in-large-gold-bold-typography-3-show-a-sub-message-alex-rivera-will-contact-you-shortly-4-show-a-whatsapp-cta-button-linking-to-https-wa-me-91xxxxxxxxx-text-hi-20alex-2c-20i-27m-20interested-20in-20a-20delhi-20luxury-20property-in-a-new-tab-and-5-show-a-close-button-that-dismisses-the-overlay-and-returns-the-user-to-the-normal-page-the-overlay-should-appear-for-a-minimum-of-3-seconds-before-the-close-button-becomes-active",
-      "title": "After a successful Contact form submission (lead saved to backend), display a full-screen 'Deal Locked!' victory overlay on top of all page content. The overlay must: (1) trigger a full-screen gold confetti burst animation (200+ confetti pieces in gold #FFD700, crimson #DC143C, and white colors) using a canvas-based or DOM-based confetti library, (2) show the text 'Deal Locked! 🎉' in large gold bold typography, (3) show a sub-message 'Alex Rivera will contact you shortly.', (4) show a WhatsApp CTA button linking to https://wa.me/91xxxxxxxxx?text=Hi%20Alex%2C%20I%27m%20interested%20in%20a%20Delhi%20luxury%20property in a new tab, and (5) show a 'Close' button that dismisses the overlay and returns the user to the normal page. The overlay should appear for a minimum of 3 seconds before the close button becomes active.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-load-playfair-display-serif-and-montserrat-sans-serif-from-google-fonts-via-index-html-preload-links-apply-playfair-display-to-all-headings-h1-h4-section-titles-card-titles-and-montserrat-to-all-body-text-labels-and-ui-copy-across-every-component-remove-any-usage-of-the-current-inter-system-font-stack-from-headings-h1-in-the-hero-must-render-at-7rem-on-desktop-and-10vw-on-mobile-all-section-headings-should-use-playfair-display-at-a-minimum-of-2-5rem-add-letter-spacing-0-05em-to-all-headings-via-the-global-stylesheet",
-      "title": "Load Playfair Display (serif) and Montserrat (sans-serif) from Google Fonts via index.html preload links. Apply Playfair Display to all headings (h1–h4, section titles, card titles) and Montserrat to all body text, labels, and UI copy across every component. Remove any usage of the current Inter/system font stack from headings. H1 in the Hero must render at 7rem on desktop and 10vw on mobile. All section headings should use Playfair Display at a minimum of 2.5rem. Add letter-spacing: 0.05em to all headings via the global stylesheet.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-glassmorphism-styling-to-all-cards-buttons-sidebars-modals-and-panels-across-the-entire-application-each-element-must-use-backdrop-filter-blur-20px-a-background-of-rgba-255-255-255-0-07-approximately-7-10-white-and-a-gold-ffd700-border-at-1px-opacity-0-3-this-applies-to-propertycard-front-and-back-faces-propertymatcher-sidebar-emicalculator-sidebar-propertymodal-dialog-admin-panel-table-and-form-containers-contact-form-victoryoverlay-panel-and-all-primary-and-secondary-buttons-the-frosted-glass-effect-must-remain-visible-against-the-dark-0a0a0a-background",
-      "title": "Apply glassmorphism styling to all cards, buttons, sidebars, modals, and panels across the entire application. Each element must use backdrop-filter: blur(20px), a background of rgba(255,255,255,0.07) (approximately 7–10% white), and a gold (#FFD700) border at 1px opacity 0.3. This applies to: PropertyCard (front and back faces), PropertyMatcher sidebar, EMICalculator sidebar, PropertyModal dialog, Admin panel table and form containers, Contact form, VictoryOverlay panel, and all primary and secondary buttons. The frosted-glass effect must remain visible against the dark #0A0A0A background.",
-      "reqIds": [
-        "REQ-22"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-hero-section-background-to-use-a-css-linear-gradient-135deg-0a0a0a-0-1a0a1a-50-000-100-instead-of-any-static-image-or-three-js-canvas-overlay-a-canvas-based-gold-particle-animation-300-particles-drifting-upward-gold-ffd700-color-varying-sizes-1-3px-randomised-speed-and-opacity-gold-accent-elements-buttons-price-tags-highlight-text-should-use-linear-gradient-45deg-ffd700-ffa500-crimson-accent-elements-should-use-linear-gradient-45deg-dc143c-b22222-update-frontend-src-index-css-and-relevant-component-files-to-apply-these-gradients-consistently",
-      "title": "Update the hero section background to use a CSS linear-gradient(135deg, #0A0A0A 0%, #1A0A1A 50%, #000 100%) instead of any static image or Three.js canvas. Overlay a canvas-based gold particle animation (300+ particles drifting upward, gold #FFD700 color, varying sizes 1–3px, randomised speed and opacity). Gold accent elements (buttons, price tags, highlight text) should use linear-gradient(45deg, #FFD700, #FFA500). Crimson accent elements should use linear-gradient(45deg, #DC143C, #B22222). Update frontend/src/index.css and relevant component files to apply these gradients consistently.",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-css-micro-animations-to-all-interactive-elements-site-wide-buttons-on-hover-must-apply-transform-scale-1-05-and-a-gold-glow-box-shadow-0-0-15px-rgba-255-215-0-0-6-property-cards-on-hover-must-apply-a-lift-shadow-of-0-20px-40px-rgba-255-215-0-0-15-all-transitions-must-use-transition-all-0-3s-ease-form-inputs-contact-form-admin-form-emi-calculator-must-show-a-gold-underline-border-bottom-2px-solid-ffd700-on-focus-with-a-smooth-0-2s-transition-these-must-be-implemented-as-pure-css-transitions-in-the-global-stylesheet-or-component-level-tailwind-classes-not-replacing-any-existing-gsap-animations",
-      "title": "Add CSS micro-animations to all interactive elements site-wide. Buttons on hover must apply transform: scale(1.05) and a gold glow box-shadow (0 0 15px rgba(255,215,0,0.6)). Property cards on hover must apply a lift shadow of 0 20px 40px rgba(255,215,0,0.15). All transitions must use transition: all 0.3s ease. Form inputs (Contact form, Admin form, EMI Calculator) must show a gold underline (border-bottom: 2px solid #FFD700) on focus with a smooth 0.2s transition. These must be implemented as pure CSS transitions in the global stylesheet or component-level Tailwind classes, not replacing any existing GSAP animations.",
-      "reqIds": [
-        "REQ-24"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-utility-function-formatindianprice-priceinrupees-number-string-that-formats-a-number-using-indian-place-value-notation-e-g-28000000-2-80-00-000-apply-this-formatter-everywhere-a-price-is-displayed-propertycard-front-face-propertycard-back-face-propertymodal-propertymatcher-budget-labels-emicalculator-monthly-emi-output-and-total-interest-output-admin-panel-properties-table-price-column-and-propertyformmodal-price-field-display-update-the-hardcoded-property-price-values-in-the-properties-data-to-be-stored-as-plain-numbers-and-formatted-at-render-time-using-this-utility",
-      "title": "Create a utility function formatIndianPrice(priceInRupees: number): string that formats a number using Indian place-value notation (e.g., 28000000 → '₹2,80,00,000'). Apply this formatter everywhere a price is displayed: PropertyCard front face, PropertyCard back face, PropertyModal, PropertyMatcher budget labels, EMICalculator monthly EMI output and total interest output, Admin panel properties table price column, and PropertyFormModal price field display. Update the hardcoded property price values in the properties data to be stored as plain numbers and formatted at render time using this utility.",
-      "reqIds": [
-        "REQ-25"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-full-screen-loading-screen-component-loadingscreen-tsx-that-displays-on-initial-app-mount-it-must-show-a-circular-gold-spinner-animation-and-the-text-entering-delhi-empire-in-playfair-display-gold-ffd700-typography-centred-on-a-0a0a0a-background-the-loading-screen-must-disappear-after-a-minimum-of-1-5-seconds-and-after-the-react-app-has-mounted-use-a-useeffect-with-a-settimeout-it-must-be-rendered-in-app-tsx-above-all-other-content-and-use-a-z-index-higher-than-all-other-layers-the-fade-out-transition-must-take-0-5s",
-      "title": "Add a full-screen loading screen component (LoadingScreen.tsx) that displays on initial app mount. It must show a circular gold spinner animation and the text 'Entering Delhi Empire...' in Playfair Display gold (#FFD700) typography centred on a #0A0A0A background. The loading screen must disappear after a minimum of 1.5 seconds and after the React app has mounted (use a useEffect with a setTimeout). It must be rendered in App.tsx above all other content and use a z-index higher than all other layers. The fade-out transition must take 0.5s.",
-      "reqIds": [
-        "REQ-26"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-scroll-progress-bar-fixed-to-the-very-top-of-the-viewport-position-fixed-top-0-left-0-z-index-above-the-marketticker-the-bar-must-be-3-4px-tall-start-at-0-width-and-grow-to-100-width-as-the-user-scrolls-to-the-bottom-of-the-page-style-it-with-a-gold-gradient-background-linear-gradient-90deg-ffd700-ffa500-track-scroll-progress-using-a-scroll-event-listener-in-a-useeffect-in-app-tsx-or-a-dedicated-scrollprogressbar-component-and-update-the-bar-s-width-via-react-state",
-      "title": "Add a scroll progress bar fixed to the very top of the viewport (position: fixed, top: 0, left: 0, z-index above the MarketTicker). The bar must be 3–4px tall, start at 0% width and grow to 100% width as the user scrolls to the bottom of the page. Style it with a gold gradient (background: linear-gradient(90deg, #FFD700, #FFA500)). Track scroll progress using a scroll event listener in a useEffect in App.tsx or a dedicated ScrollProgressBar component, and update the bar's width via React state.",
-      "reqIds": [
-        "REQ-27"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-existing-customcursor-gold-circle-with-a-gold-key-shaped-svg-custom-cursor-create-an-inline-svg-of-a-key-silhouette-filled-with-ffd700-at-approximately-24-24px-the-cursor-must-follow-the-mouse-using-requestanimationframe-for-smooth-60fps-tracking-retain-the-existing-spark-particle-trail-3-particles-that-follow-and-fade-out-when-hovering-over-any-button-or-anchor-link-element-the-cursor-must-scale-up-to-1-5-its-base-size-hide-the-default-os-cursor-site-wide-cursor-none-on-the-body",
-      "title": "Replace the existing CustomCursor (gold circle) with a gold key-shaped SVG custom cursor. Create an inline SVG of a key silhouette filled with #FFD700 at approximately 24×24px. The cursor must follow the mouse using requestAnimationFrame for smooth 60fps tracking. Retain the existing spark particle trail (3 particles that follow and fade out). When hovering over any button or anchor/link element, the cursor must scale up to 1.5× its base size. Hide the default OS cursor site-wide (cursor: none on the body).",
-      "reqIds": [
-        "REQ-28"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-increase-the-spacing-between-property-listing-cards-in-the-properties-grid-to-4rem-gutters-gap-4rem-or-equivalent-apply-this-to-the-css-grid-flex-container-in-properties-tsx-ensure-the-layout-remains-responsive-on-screens-narrower-than-768px-the-gap-can-reduce-to-2rem-to-prevent-overflow",
-      "title": "Increase the spacing between property listing cards in the Properties grid to 4rem gutters (gap: 4rem or equivalent). Apply this to the CSS grid/flex container in Properties.tsx. Ensure the layout remains responsive — on screens narrower than 768px the gap can reduce to 2rem to prevent overflow.",
-      "reqIds": [
-        "REQ-29"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-in-the-6th-section-of-the-page-locate-the-parent-container-at-xpath-html-1-body-1-div-1-div-6-div-1-div-1-and-its-two-child-span-elements-xpath-span-1-and-span-2-stack-the-two-spans-vertically-so-each-appears-on-its-own-line-display-block-or-flex-direction-column-on-the-parent-implement-a-css-animation-that-cycles-through-the-spans-one-at-a-time-each-span-fades-slides-in-stays-visible-for-2-seconds-then-fades-slides-out-before-the-next-one-appears-creating-a-continuous-rotating-cycling-text-effect-use-css-keyframe-animations-with-an-appropriate-staggered-animation-delay-so-span-2-begins-its-cycle-after-span-1-has-completed-its-display-window-the-transition-between-spans-must-be-smooth-opacity-translatey-approximately-0-4s-ease-do-not-alter-any-other-elements-outside-this-container",
-      "title": "In the 6th section of the page, locate the parent container at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1] and its two child <span> elements (XPath span[1] and span[2]). Stack the two spans vertically so each appears on its own line (display: block or flex-direction: column on the parent). Implement a CSS animation that cycles through the spans one at a time: each span fades/slides in, stays visible for ~2 seconds, then fades/slides out before the next one appears, creating a continuous rotating/cycling text effect. Use CSS keyframe animations with an appropriate staggered animation-delay so span[2] begins its cycle after span[1] has completed its display window. The transition between spans must be smooth (opacity + translateY, approximately 0.4s ease). Do not alter any other elements outside this container.",
-      "reqIds": [
-        "REQ-30"
       ],
       "version": 1
     }
@@ -255,57 +105,55 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Phase 1: Hero section with Delhi skyline parallax, 'Unlock Delhi Empires' tagline, WhatsApp CTA button",
+      "summary": "15 demo properties (3 per city) hardcoded with localStorage persistence and F5 survival",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Phase 1: Properties grid with 6 Delhi luxury listings (image, price, View button, hover zoom)",
+      "summary": "Working back button on property detail pages (window.history.back())",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Phase 1: About section with Alex Rivera bio and 3 testimonials",
+      "summary": "City filters showing only correct city properties",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Phase 1: Contact form with lead capture and CSV export",
+      "summary": "Indian price formatting everywhere: ₹28,00,00,000 (no Cr abbreviation)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Phase 1: Admin panel at /admin protected by Internet Identity with full property CRUD (title, price, image URL, description)",
+      "summary": "Professional navy (#1E3A8A) + white + gray design with Inter fonts, clean property cards, Delhi skyline hero",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-15",
-      "summary": "Implement the Motoko backend with two stable data stores: (1) a properties store (id, title, location, price as Text, imageUrl, description, createdAt) and (2) a leads store (id, name, phone, email, budget, message, createdAt). Expose CRUD functions for properties (create, read all, update, delete) and a create function for leads plus a query to fetch all leads.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Visual Luxury Overhaul: Playfair Display + Montserrat fonts, glassmorphism blur(20px) on all cards/buttons/panels, hero black-purple gradient + gold canvas particles, Indian price notation ₹X,XX,XX,XXX everywhere, micro-animations (hover glows, lift shadows, letter-spacing), loading screen (golden spinner + 'Entering Delhi Empire...'), scroll progress bar (gold gradient), gold key-shaped SVG cursor with trail, 4rem card gutters",
+      "id": "AR-6",
+      "summary": "Agent credentials: RERA badge HRERA-PKL-2026-00123, 5+ years/50+ clients/CREDAI, testimonials section",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-17",
-      "summary": "Make span elements in the 6th section rotate and display one per line (stacked vertically with smooth CSS rotation/animation)",
+      "id": "AR-7",
+      "summary": "Mobile-first layout: 60px full-width bottom bar buttons, 48px+ touch targets, swipeable photo carousel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Admin panel (/admin) with Internet Identity login, city dropdown, CRUD for properties (title, price, location, 3 photo URLs, enquiry count)",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Alex Rivera Delhi Luxury Real Estate Portfolio",
+  "projectName": "Delhi Luxury Empire",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

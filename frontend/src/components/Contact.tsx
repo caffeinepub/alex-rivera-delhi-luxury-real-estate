@@ -1,323 +1,283 @@
 import React, { useState } from 'react';
-import { useCreateLead } from '../hooks/useQueries';
-import { useLanguage } from '../contexts/LanguageContext';
-import VictoryOverlay from './VictoryOverlay';
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
+const BUDGET_OPTIONS = [
+  { value: 'under-500k', label: 'Under $500K' },
+  { value: '500k-1m', label: '$500K – $1M' },
+  { value: '1m-5m', label: '$1M – $5M' },
+  { value: '5m-plus', label: '$5M+' },
+];
+
+const PROPERTY_TYPE_OPTIONS = [
+  { value: 'villa', label: 'Villa' },
+  { value: 'penthouse', label: 'Penthouse' },
+  { value: 'land', label: 'Land' },
+  { value: 'commercial', label: 'Commercial' },
+];
+
+interface FormData {
+  name: string;
+  phone: string;
+  email: string;
+  budget: string;
+  propertyType: string;
+  message: string;
+  _gotcha: string; // honeypot
+}
+
+const initialForm: FormData = {
+  name: '',
+  phone: '',
+  email: '',
+  budget: '',
+  propertyType: '',
+  message: '',
+  _gotcha: '',
+};
+
+type FormStatus = 'idle' | 'loading' | 'success' | 'error';
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePhone(phone: string): boolean {
+  return /^[\+]?[\d\s\-\(\)]{7,20}$/.test(phone);
+}
 
 export default function Contact() {
-  const { t } = useLanguage();
-  const createLead = useCreateLead();
-  const [showVictory, setShowVictory] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    budget: '',
-    message: '',
-  });
+  const [form, setForm] = useState<FormData>(initialForm);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [status, setStatus] = useState<FormStatus>('idle');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const validate = (): boolean => {
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.phone.trim()) newErrors.phone = 'Phone is required';
+    else if (!validatePhone(form.phone)) newErrors.phone = 'Please enter a valid phone number';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    else if (!validateEmail(form.email)) newErrors.email = 'Please enter a valid email address';
+    if (!form.budget) newErrors.budget = 'Please select a budget range';
+    if (!form.propertyType) newErrors.propertyType = 'Please select a property type';
+    if (!form.message.trim()) newErrors.message = 'Message is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (errors[name as keyof FormData]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form._gotcha) return; // honeypot triggered
+    if (!validate()) return;
+
+    setStatus('loading');
     try {
-      await createLead.mutateAsync({
-        name: form.name,
-        phone: form.phone,
-        email: form.email,
-        budget: form.budget,
-        message: form.message,
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          budget: form.budget,
+          propertyType: form.propertyType,
+          message: form.message,
+        }),
       });
-      setShowVictory(true);
-      setForm({ name: '', phone: '', email: '', budget: '', message: '' });
-    } catch (err) {
-      console.error('Lead submission error:', err);
+      if (res.ok) {
+        setStatus('success');
+        setForm(initialForm);
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '12px 16px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 215, 0, 0.2)',
-    borderRadius: '4px',
-    color: '#FFFFFF',
-    fontFamily: 'Montserrat, sans-serif',
-    fontSize: '0.9rem',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontFamily: 'Montserrat, sans-serif',
-    fontSize: '0.7rem',
-    letterSpacing: '0.15em',
-    textTransform: 'uppercase' as const,
-    color: 'rgba(255, 215, 0, 0.7)',
-    display: 'block',
-    marginBottom: '6px',
-  };
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255, 215, 0, 0.7)';
-    (e.currentTarget as HTMLElement).style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.15)';
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255, 215, 0, 0.2)';
-    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-  };
+  const inputClass = (field: keyof FormData) =>
+    `w-full font-inter text-sm bg-[#1a1a1a] text-ivory placeholder-ivory/30 px-4 py-3 border ${
+      errors[field] ? 'border-red-500/60' : 'border-gold/30 focus:border-gold'
+    } outline-none transition-colors duration-200 rounded-sm`;
 
   return (
-    <>
-      <section
-        id="contact"
-        style={{
-          padding: '6rem 0',
-          background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0A0D 100%)',
-        }}
-      >
-        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 2rem' }}>
-          {/* Section header */}
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                padding: '4px 16px',
-                marginBottom: '1rem',
-                background: 'rgba(255, 215, 0, 0.1)',
-                border: '1px solid rgba(255, 215, 0, 0.3)',
-                borderRadius: '100px',
-                fontFamily: 'Montserrat, sans-serif',
-                fontSize: '0.7rem',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                color: '#FFD700',
-              }}
+    <section id="consultation" className="py-24 bg-[#111111]">
+      <div className="max-w-2xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <p className="font-inter text-xs tracking-[0.3em] text-gold uppercase mb-4">
+            Private Advisory
+          </p>
+          <h2 className="font-playfair text-4xl md:text-5xl font-bold text-ivory mb-4">
+            Book Private Consultation
+          </h2>
+          <p className="font-inter text-ivory/60 text-base">
+            Share your requirements and Alexander will personally respond within 24 hours.
+          </p>
+        </div>
+
+        {status === 'success' ? (
+          <div className="text-center py-16 border border-gold/20 rounded-sm bg-[#161616]">
+            <CheckCircle size={48} className="text-gold mx-auto mb-4" />
+            <h3 className="font-playfair text-2xl font-semibold text-ivory mb-2">Thank You</h3>
+            <p className="font-inter text-ivory/60 text-base">
+              We will contact you within 24 hours to arrange your private consultation.
+            </p>
+            <button
+              onClick={() => setStatus('idle')}
+              className="mt-6 font-inter text-sm text-gold border border-gold/40 px-6 py-2 rounded-full hover:bg-gold hover:text-matte-black transition-all duration-200"
             >
-              Get In Touch
-            </div>
-
-            {/* Rotating heading spans — one per line, cycling one at a time */}
-            <div className="rotating-heading-wrapper">
-              <span className="rotating-heading-span rotating-span-1">
-                {t('contact.heading')}
-              </span>
-              <span className="rotating-heading-span rotating-span-2">
-                {t('contact.subheading')}
-              </span>
-            </div>
+              Submit Another Enquiry
+            </button>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            {/* Honeypot */}
+            <input
+              type="text"
+              name="_gotcha"
+              value={form._gotcha}
+              onChange={handleChange}
+              style={{ display: 'none' }}
+              tabIndex={-1}
+              autoComplete="off"
+            />
 
-          {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              background: 'rgba(255, 255, 255, 0.07)',
-              border: '1px solid rgba(255, 215, 0, 0.3)',
-              borderRadius: '12px',
-              padding: '2.5rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1.5rem',
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label style={labelStyle}>{t('contact.name')}</label>
+                <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                  Full Name *
+                </label>
                 <input
                   type="text"
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  required
-                  placeholder={t('contact.namePlaceholder')}
-                  style={inputStyle}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
+                  placeholder="Alexander Reid"
+                  className={inputClass('name')}
                 />
+                {errors.name && <p className="font-inter text-xs text-red-400 mt-1">{errors.name}</p>}
               </div>
               <div>
-                <label style={labelStyle}>{t('contact.phone')}</label>
+                <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                  Phone Number *
+                </label>
                 <input
                   type="tel"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  required
-                  placeholder={t('contact.phonePlaceholder')}
-                  style={inputStyle}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
+                  placeholder="+1 800 000 0000"
+                  className={inputClass('phone')}
                 />
+                {errors.phone && <p className="font-inter text-xs text-red-400 mt-1">{errors.phone}</p>}
               </div>
             </div>
 
             <div>
-              <label style={labelStyle}>{t('contact.email')}</label>
+              <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                Email Address *
+              </label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                required
-                placeholder={t('contact.emailPlaceholder')}
-                style={inputStyle}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
+                placeholder="your@email.com"
+                className={inputClass('email')}
               />
+              {errors.email && <p className="font-inter text-xs text-red-400 mt-1">{errors.email}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                  Budget Range *
+                </label>
+                <select
+                  name="budget"
+                  value={form.budget}
+                  onChange={handleChange}
+                  className={inputClass('budget')}
+                >
+                  <option value="">Select budget</option>
+                  {BUDGET_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                {errors.budget && <p className="font-inter text-xs text-red-400 mt-1">{errors.budget}</p>}
+              </div>
+              <div>
+                <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                  Property Type *
+                </label>
+                <select
+                  name="propertyType"
+                  value={form.propertyType}
+                  onChange={handleChange}
+                  className={inputClass('propertyType')}
+                >
+                  <option value="">Select type</option>
+                  {PROPERTY_TYPE_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                {errors.propertyType && <p className="font-inter text-xs text-red-400 mt-1">{errors.propertyType}</p>}
+              </div>
             </div>
 
             <div>
-              <label style={labelStyle}>{t('contact.budget')}</label>
-              <select
-                name="budget"
-                value={form.budget}
-                onChange={handleChange}
-                required
-                style={inputStyle}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              >
-                <option value="" style={{ background: '#0A0A0A' }}>{t('contact.budgetPlaceholder')}</option>
-                <option value="₹1Cr - ₹5Cr" style={{ background: '#0A0A0A' }}>₹1,00,00,000 – ₹5,00,00,000</option>
-                <option value="₹5Cr - ₹15Cr" style={{ background: '#0A0A0A' }}>₹5,00,00,000 – ₹15,00,00,000</option>
-                <option value="₹15Cr - ₹30Cr" style={{ background: '#0A0A0A' }}>₹15,00,00,000 – ₹30,00,00,000</option>
-                <option value="₹30Cr+" style={{ background: '#0A0A0A' }}>₹30,00,00,000+</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={labelStyle}>{t('contact.message')}</label>
+              <label className="font-inter text-xs text-ivory/50 uppercase tracking-wide block mb-1.5">
+                Message *
+              </label>
               <textarea
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                rows={4}
-                placeholder={t('contact.messagePlaceholder')}
-                style={{ ...inputStyle, resize: 'vertical' }}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
+                placeholder="Tell us about your requirements, preferred locations, timeline..."
+                rows={5}
+                className={inputClass('message')}
               />
+              {errors.message && <p className="font-inter text-xs text-red-400 mt-1">{errors.message}</p>}
             </div>
+
+            {status === 'error' && (
+              <div className="flex items-center gap-2 border border-red-500/30 bg-red-500/10 px-4 py-3 rounded-sm">
+                <AlertCircle size={16} className="text-red-400 shrink-0" />
+                <p className="font-inter text-sm text-red-400">
+                  Submission failed. Please try again or email{' '}
+                  <a href="mailto:contact@alexanderreid.com" className="underline">
+                    contact@alexanderreid.com
+                  </a>
+                </p>
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={createLead.isPending}
-              style={{
-                padding: '16px',
-                background: createLead.isPending
-                  ? 'rgba(255, 215, 0, 0.4)'
-                  : 'linear-gradient(45deg, #FFD700, #FFA500)',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#0A0A0A',
-                fontFamily: 'Montserrat, sans-serif',
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                cursor: createLead.isPending ? 'not-allowed' : 'none',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-              onMouseEnter={(e) => {
-                if (!createLead.isPending) {
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 25px rgba(255, 215, 0, 0.6)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-                (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-              }}
+              disabled={status === 'loading'}
+              className="w-full font-inter font-medium bg-gold text-matte-black py-4 hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2 text-base rounded-sm"
             >
-              {createLead.isPending ? (
+              {status === 'loading' ? (
                 <>
-                  <div
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      border: '2px solid rgba(10,10,10,0.3)',
-                      borderTopColor: '#0A0A0A',
-                      animation: 'goldSpin 0.8s linear infinite',
-                    }}
-                  />
+                  <Loader2 size={18} className="animate-spin" />
                   Submitting...
                 </>
               ) : (
-                t('contact.submit')
+                'Submit Enquiry'
               )}
             </button>
-
-            {createLead.isError && (
-              <p
-                style={{
-                  fontFamily: 'Montserrat, sans-serif',
-                  fontSize: '0.85rem',
-                  color: '#DC143C',
-                  textAlign: 'center',
-                }}
-              >
-                {t('contact.error')}
-              </p>
-            )}
           </form>
-
-          {/* WhatsApp direct link */}
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <p
-              style={{
-                fontFamily: 'Montserrat, sans-serif',
-                fontSize: '0.85rem',
-                color: 'rgba(255, 255, 255, 0.4)',
-                marginBottom: '1rem',
-              }}
-            >
-              {t('contact.whatsapp')}
-            </p>
-            <a
-              href="https://wa.me/919999999999?text=Hi%20Alex%2C%20I%27m%20interested%20in%20a%20Delhi%20luxury%20property"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 28px',
-                background: 'rgba(37, 211, 102, 0.1)',
-                border: '1px solid rgba(37, 211, 102, 0.3)',
-                borderRadius: '100px',
-                color: '#25D366',
-                fontFamily: 'Montserrat, sans-serif',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)';
-                (e.currentTarget as HTMLElement).style.background = 'rgba(37, 211, 102, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-                (e.currentTarget as HTMLElement).style.background = 'rgba(37, 211, 102, 0.1)';
-              }}
-            >
-              📱 +91 99999 99999
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {showVictory && <VictoryOverlay onClose={() => setShowVictory(false)} />}
-    </>
+        )}
+      </div>
+    </section>
   );
 }

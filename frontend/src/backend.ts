@@ -91,20 +91,25 @@ export class ExternalBlob {
 }
 export interface Lead {
     id: string;
+    propertyType: PropertyType;
     name: string;
     createdAt: bigint;
     email: string;
     message: string;
     phone: string;
-    budget: string;
+    budget: bigint;
 }
 export interface Property {
     id: string;
-    title: string;
+    features: Array<string>;
+    propertyType: PropertyType;
+    bedrooms: bigint;
+    name: string;
     createdAt: bigint;
-    description: string;
+    sqft: bigint;
     imageUrl: string;
-    price: string;
+    category: PropertyCategory;
+    price: bigint;
     location: string;
 }
 export interface _CaffeineStorageRefillInformation {
@@ -121,6 +126,16 @@ export interface _CaffeineStorageRefillResult {
     success?: boolean;
     topped_up_amount?: bigint;
 }
+export enum PropertyCategory {
+    featured = "featured",
+    land = "land"
+}
+export enum PropertyType {
+    commercial = "commercial",
+    villa = "villa",
+    penthouse = "penthouse",
+    land = "land"
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -135,20 +150,23 @@ export interface backendInterface {
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    createLead(name: string, phone: string, email: string, budget: string, message: string): Promise<void>;
-    createProperty(title: string, location: string, price: string, imageUrl: string, description: string): Promise<string>;
+    createLead(name: string, phone: string, email: string, budget: bigint, propertyType: PropertyType, message: string): Promise<void>;
+    createProperty(property: Property): Promise<void>;
     deleteProperty(id: string): Promise<void>;
-    getAllLeads(): Promise<Array<Lead>>;
     getAllProperties(): Promise<Array<Property>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getProperty(id: string): Promise<Property>;
+    getFeaturedProperties(): Promise<Array<Property>>;
+    getLeads(): Promise<Array<Lead>>;
+    getPropertiesByCategory(category: PropertyCategory): Promise<Array<Property>>;
+    getPropertiesByType(propertyType: PropertyType): Promise<Array<Property>>;
+    getProperty(id: string): Promise<Property | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    updateProperty(id: string, title: string, location: string, price: string, imageUrl: string, description: string): Promise<boolean>;
+    updateProperty(id: string, property: Property): Promise<void>;
 }
-import type { UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { Lead as _Lead, Property as _Property, PropertyCategory as _PropertyCategory, PropertyType as _PropertyType, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -263,31 +281,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createLead(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string): Promise<void> {
+    async createLead(arg0: string, arg1: string, arg2: string, arg3: bigint, arg4: PropertyType, arg5: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createLead(arg0, arg1, arg2, arg3, arg4);
+                const result = await this.actor.createLead(arg0, arg1, arg2, arg3, to_candid_PropertyType_n10(this._uploadFile, this._downloadFile, arg4), arg5);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createLead(arg0, arg1, arg2, arg3, arg4);
+            const result = await this.actor.createLead(arg0, arg1, arg2, arg3, to_candid_PropertyType_n10(this._uploadFile, this._downloadFile, arg4), arg5);
             return result;
         }
     }
-    async createProperty(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string): Promise<string> {
+    async createProperty(arg0: Property): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createProperty(arg0, arg1, arg2, arg3, arg4);
+                const result = await this.actor.createProperty(to_candid_Property_n12(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createProperty(arg0, arg1, arg2, arg3, arg4);
+            const result = await this.actor.createProperty(to_candid_Property_n12(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -305,88 +323,130 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getAllLeads(): Promise<Array<Lead>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllLeads();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllLeads();
-            return result;
-        }
-    }
     async getAllProperties(): Promise<Array<Property>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllProperties();
-                return result;
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllProperties();
-            return result;
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n24(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n24(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getProperty(arg0: string): Promise<Property> {
+    async getFeaturedProperties(): Promise<Array<Property>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getFeaturedProperties();
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getFeaturedProperties();
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getLeads(): Promise<Array<Lead>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLeads();
+                return from_candid_vec_n26(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLeads();
+            return from_candid_vec_n26(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getPropertiesByCategory(arg0: PropertyCategory): Promise<Array<Property>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPropertiesByCategory(to_candid_PropertyCategory_n14(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPropertiesByCategory(to_candid_PropertyCategory_n14(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getPropertiesByType(arg0: PropertyType): Promise<Array<Property>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPropertiesByType(to_candid_PropertyType_n10(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPropertiesByType(to_candid_PropertyType_n10(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getProperty(arg0: string): Promise<Property | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getProperty(arg0);
-                return result;
+                return from_candid_opt_n29(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getProperty(arg0);
-            return result;
+            return from_candid_opt_n29(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -417,35 +477,119 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateProperty(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string): Promise<boolean> {
+    async updateProperty(arg0: string, arg1: Property): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateProperty(arg0, arg1, arg2, arg3, arg4, arg5);
+                const result = await this.actor.updateProperty(arg0, to_candid_Property_n12(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateProperty(arg0, arg1, arg2, arg3, arg4, arg5);
+            const result = await this.actor.updateProperty(arg0, to_candid_Property_n12(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
 }
-function from_candid_UserRole_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n12(_uploadFile, _downloadFile, value);
+function from_candid_Lead_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Lead): Lead {
+    return from_candid_record_n28(_uploadFile, _downloadFile, value);
+}
+function from_candid_PropertyCategory_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PropertyCategory): PropertyCategory {
+    return from_candid_variant_n22(_uploadFile, _downloadFile, value);
+}
+function from_candid_PropertyType_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PropertyType): PropertyType {
+    return from_candid_variant_n20(_uploadFile, _downloadFile, value);
+}
+function from_candid_Property_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Property): Property {
+    return from_candid_record_n18(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n25(_uploadFile, _downloadFile, value);
 }
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Property]): Property | null {
+    return value.length === 0 ? null : from_candid_Property_n17(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    features: Array<string>;
+    propertyType: _PropertyType;
+    bedrooms: bigint;
+    name: string;
+    createdAt: bigint;
+    sqft: bigint;
+    imageUrl: string;
+    category: _PropertyCategory;
+    price: bigint;
+    location: string;
+}): {
+    id: string;
+    features: Array<string>;
+    propertyType: PropertyType;
+    bedrooms: bigint;
+    name: string;
+    createdAt: bigint;
+    sqft: bigint;
+    imageUrl: string;
+    category: PropertyCategory;
+    price: bigint;
+    location: string;
+} {
+    return {
+        id: value.id,
+        features: value.features,
+        propertyType: from_candid_PropertyType_n19(_uploadFile, _downloadFile, value.propertyType),
+        bedrooms: value.bedrooms,
+        name: value.name,
+        createdAt: value.createdAt,
+        sqft: value.sqft,
+        imageUrl: value.imageUrl,
+        category: from_candid_PropertyCategory_n21(_uploadFile, _downloadFile, value.category),
+        price: value.price,
+        location: value.location
+    };
+}
+function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    propertyType: _PropertyType;
+    name: string;
+    createdAt: bigint;
+    email: string;
+    message: string;
+    phone: string;
+    budget: bigint;
+}): {
+    id: string;
+    propertyType: PropertyType;
+    name: string;
+    createdAt: bigint;
+    email: string;
+    message: string;
+    phone: string;
+    budget: bigint;
+} {
+    return {
+        id: value.id,
+        propertyType: from_candid_PropertyType_n19(_uploadFile, _downloadFile, value.propertyType),
+        name: value.name,
+        createdAt: value.createdAt,
+        email: value.email,
+        message: value.message,
+        phone: value.phone,
+        budget: value.budget
+    };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     success: [] | [boolean];
@@ -459,7 +603,25 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
     };
 }
-function from_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    commercial: null;
+} | {
+    villa: null;
+} | {
+    penthouse: null;
+} | {
+    land: null;
+}): PropertyType {
+    return "commercial" in value ? PropertyType.commercial : "villa" in value ? PropertyType.villa : "penthouse" in value ? PropertyType.penthouse : "land" in value ? PropertyType.land : value;
+}
+function from_candid_variant_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    featured: null;
+} | {
+    land: null;
+}): PropertyCategory {
+    return "featured" in value ? PropertyCategory.featured : "land" in value ? PropertyCategory.land : value;
+}
+function from_candid_variant_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -467,6 +629,21 @@ function from_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Ui
     guest: null;
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
+}
+function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Property>): Array<Property> {
+    return value.map((x)=>from_candid_Property_n17(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Lead>): Array<Lead> {
+    return value.map((x)=>from_candid_Lead_n27(_uploadFile, _downloadFile, x));
+}
+function to_candid_PropertyCategory_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PropertyCategory): _PropertyCategory {
+    return to_candid_variant_n15(_uploadFile, _downloadFile, value);
+}
+function to_candid_PropertyType_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PropertyType): _PropertyType {
+    return to_candid_variant_n11(_uploadFile, _downloadFile, value);
+}
+function to_candid_Property_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Property): _Property {
+    return to_candid_record_n13(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n9(_uploadFile, _downloadFile, value);
@@ -477,6 +654,45 @@ function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: Exte
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
+function to_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    features: Array<string>;
+    propertyType: PropertyType;
+    bedrooms: bigint;
+    name: string;
+    createdAt: bigint;
+    sqft: bigint;
+    imageUrl: string;
+    category: PropertyCategory;
+    price: bigint;
+    location: string;
+}): {
+    id: string;
+    features: Array<string>;
+    propertyType: _PropertyType;
+    bedrooms: bigint;
+    name: string;
+    createdAt: bigint;
+    sqft: bigint;
+    imageUrl: string;
+    category: _PropertyCategory;
+    price: bigint;
+    location: string;
+} {
+    return {
+        id: value.id,
+        features: value.features,
+        propertyType: to_candid_PropertyType_n10(_uploadFile, _downloadFile, value.propertyType),
+        bedrooms: value.bedrooms,
+        name: value.name,
+        createdAt: value.createdAt,
+        sqft: value.sqft,
+        imageUrl: value.imageUrl,
+        category: to_candid_PropertyCategory_n14(_uploadFile, _downloadFile, value.category),
+        price: value.price,
+        location: value.location
+    };
+}
 function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     proposed_top_up_amount?: bigint;
 }): {
@@ -485,6 +701,36 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
     return {
         proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
     };
+}
+function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PropertyType): {
+    commercial: null;
+} | {
+    villa: null;
+} | {
+    penthouse: null;
+} | {
+    land: null;
+} {
+    return value == PropertyType.commercial ? {
+        commercial: null
+    } : value == PropertyType.villa ? {
+        villa: null
+    } : value == PropertyType.penthouse ? {
+        penthouse: null
+    } : value == PropertyType.land ? {
+        land: null
+    } : value;
+}
+function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PropertyCategory): {
+    featured: null;
+} | {
+    land: null;
+} {
+    return value == PropertyCategory.featured ? {
+        featured: null
+    } : value == PropertyCategory.land ? {
+        land: null
+    } : value;
 }
 function to_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     admin: null;

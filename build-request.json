@@ -1,42 +1,256 @@
 {
   "kind": "build_request",
-  "title": "Rotating one-per-line span animation in 6th section",
-  "priority": "normal",
+  "title": "Delhi Luxury Empire – Full Frontend Rebuild with localStorage Persistence, City Filters, Indian Pricing & Admin Panel",
+  "projectName": "Delhi Luxury Empire",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-30",
-      "text": "In the 6th section of the page, locate the parent container at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1] and its two child <span> elements (XPath span[1] and span[2]). Stack the two spans vertically so each appears on its own line (display: block or flex-direction: column on the parent). Implement a CSS animation that cycles through the spans one at a time: each span fades/slides in, stays visible for ~2 seconds, then fades/slides out before the next one appears, creating a continuous rotating/cycling text effect. Use CSS keyframe animations with an appropriate staggered animation-delay so span[2] begins its cycle after span[1] has completed its display window. The transition between spans must be smooth (opacity + translateY, approximately 0.4s ease). Do not alter any other elements outside this container.",
+      "id": "REQ-1",
+      "text": "Hardcode 15 demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad) in localStorage with realistic NCR data. Properties must persist across F5 page refreshes. Each property must have: id, city, title, price (raw number), location, 3 photo URLs, enquiry count, lat, lng. If localStorage has no properties on first load, seed it with these 15 defaults.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-9"
         ],
         "quotes": [
-          "make them rotating and one by one line"
+          "DATA PERSISTS – Admin save → F5 → properties visible (FIX localStorage)",
+          "15 DEMO PROPERTIES – 3 per city (Delhi/Gurgaon/Noida/Aerocity/Ghaziabad)"
         ]
       },
       "acceptanceCriteria": [
-        "The two span elements inside the targeted container are stacked vertically (one per line), not side by side.",
-        "Only one span is fully visible at a time; the other is hidden or mid-transition.",
-        "The spans cycle continuously — span[1] appears, then span[2], then back to span[1] — in an infinite loop.",
-        "The transition between spans uses a smooth fade or slide animation (~0.4s).",
-        "Each span remains fully visible for approximately 2 seconds before transitioning out.",
-        "No other elements on the page are affected by this change."
+        "15 properties are visible on first load without any admin action",
+        "After F5 refresh, all 15 properties are still displayed",
+        "Each city has exactly 3 properties in the seeded data",
+        "Properties include all required fields: id, city, title, price, location, 3 photo URLs, enquiry count, lat, lng"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement a utility function `formatIndianPrice(n: number): string` in `frontend/src/utils/formatIndianPrice.ts` that converts a raw integer (e.g. 2800000000) to Indian number format with ₹ symbol (e.g. ₹28,00,00,000). Use this formatter everywhere prices are displayed — property cards, property detail pages, admin panel, and any other price display.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "ALL PRICES → INDIAN FORMAT: ₹28,00,00,000 (NO 'Cr'/'28Cr')",
+          "Admin price field: Enter '2800000000' → displays '₹28,00,00,000'"
+        ]
+      },
+      "acceptanceCriteria": [
+        "formatIndianPrice(2800000000) returns '₹28,00,00,000'",
+        "formatIndianPrice(1300000000) returns '₹13,00,00,000'",
+        "No 'Cr' abbreviation appears anywhere on the site",
+        "The ₹ symbol is used consistently everywhere prices appear"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement `frontend/src/utils/propertyStorage.ts` with functions: `getProperties(): Property[]`, `saveProperty(p: Property): void`, `deleteProperty(id: number): void`, `updateProperty(p: Property): void`. This module reads/writes to localStorage key `dlx_properties`. On `getProperties`, if localStorage is empty, seed with the 15 hardcoded defaults and return them. Define the `Property` type in `frontend/src/types/property.ts`.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "Admin save → F5 → properties visible (FIX localStorage)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "getProperties() returns 15 seeded properties on a fresh browser session",
+        "saveProperty() adds a new property that survives page refresh",
+        "deleteProperty() removes a property that stays removed after F5",
+        "updateProperty() persists changes after F5"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Rebuild `frontend/src/components/Properties.tsx` to: (1) load properties from propertyStorage (not backend canister), (2) render city filter tabs [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad] — clicking a city tab filters the displayed list to only that city's properties, (3) display filtered properties as a responsive grid of PropertyCards, (4) each card links to the property detail page `/property?id={id}`.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "CITY FILTERS CORRECT – Delhi click = ONLY Delhi properties (3 minimum)",
+          "City filter → canister query by city"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clicking 'Delhi' shows exactly the 3 Delhi properties and no others",
+        "Clicking 'All' shows all 15 properties",
+        "City filter tabs are visually distinct for the active state",
+        "Property cards link correctly to the property detail page"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement `frontend/src/pages/PropertyPage.tsx` as a full property detail page. It must: (1) read the property id from URL query params (`?id=X`), (2) load the property from propertyStorage, (3) display title, formatted price, location, photo carousel (swipeable on mobile), lat/lng as a 'View on Google Maps' button linking to `https://maps.google.com/?q={lat},{lng}`, full specs, and enquiry count, (4) include a top-left back button that calls `window.history.back()`. Register this page as the `/property` route in `frontend/src/App.tsx`.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "BACK BUTTON WORKS – Property page ← top-left → listings (window.history.back())",
+          "Property page ← back button WORKS"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating to /property?id=1 shows the correct property details",
+        "Back button calls window.history.back() and returns to the listings page",
+        "Photo carousel is swipeable on mobile",
+        "'View on Google Maps' button opens the correct Google Maps URL in a new tab",
+        "Price is displayed in Indian format with ₹ symbol"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Redesign the site with a professional navy theme: primary color navy #1E3A8A, background white #F8FAFC, borders/dividers light gray #E5E7EB. Replace all gold/glassmorphism/3D effects with clean flat design. Use Inter or system-ui fonts throughout — remove Playfair Display. Update `frontend/src/index.css` and `frontend/tailwind.config.js` to reflect these design tokens.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "COLORS: Navy (#1E3A8A) + Clean white (#F8FAFC) + Light gray (#E5E7EB)",
+          "CARDS: Clean white cards, navy borders (NO gold/glassmorphism/3D)",
+          "FONTS: Inter or system fonts (NO fancy Playfair)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No gold or glassmorphism effects appear anywhere",
+        "Primary call-to-action buttons use navy #1E3A8A",
+        "Background is white/off-white, not dark",
+        "Playfair Display font is not loaded or used",
+        "Property cards have white backgrounds with navy borders"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Update `frontend/src/components/Hero.tsx` to: (1) use a Delhi skyline background image, (2) display headline 'Trusted Delhi Agent | 50+ Deals Closed', (3) show the RERA badge 'RERA Registered Agent – HRERA-PKL-2026-00123', (4) show credentials bar '5+ Years | 50+ Happy Clients | CREDAI Member', (5) use the navy color scheme.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "HERO: Simple Delhi skyline photo + 'Trusted Delhi Agent | 50+ Deals Closed'",
+          "RERA Badge: 'RERA Registered Agent – HRERA-PKL-2026-00123'",
+          "'5+ Years | 50+ Happy Clients | CREDAI Member'"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Hero section displays 'Trusted Delhi Agent | 50+ Deals Closed' as main headline",
+        "RERA badge with code HRERA-PKL-2026-00123 is visible",
+        "Credentials '5+ Years | 50+ Happy Clients | CREDAI Member' are displayed",
+        "Hero uses navy color scheme, not dark/gold"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Update `frontend/src/components/TestimonialsRotator.tsx` to include this testimonial: 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!' along with at least 2 other realistic NCR client testimonials. Maintain the existing rotator/carousel UX.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "Testimonials: 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!'"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Rohit Sharma testimonial is present and displays correctly",
+        "At least 3 testimonials total are shown in the rotator",
+        "Testimonials cycle correctly with prev/next controls"
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Make the site fully mobile-first: (1) add a fixed bottom action bar (60px tall, full width) with primary CTA buttons (e.g., 'Calculate EMI' and 'Find My Property') — visible on mobile only, (2) ensure all interactive buttons and touch targets are at minimum 48px tall/wide, (3) ensure the property photo carousel on the detail page supports touch swipe gestures.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "EMI/Match → BOTTOM BAR – Full width, 60px tall buttons",
+          "Touch targets: ALL buttons 48px+ height",
+          "Property carousel: Swipe works perfectly"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Fixed bottom bar with 2 CTA buttons is visible on mobile screens (< 768px)",
+        "Bottom bar is 60px tall and spans full viewport width",
+        "All buttons throughout the site are at least 48px in height",
+        "Property photo carousel responds to touch swipe on mobile"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Rebuild `frontend/src/pages/AdminPanel.tsx` to: (1) require Internet Identity login (use the existing useInternetIdentity hook), (2) after login, show a CRUD interface for managing properties from propertyStorage — list all properties in a table, (3) provide Add/Edit/Delete actions, (4) the property form must include: City dropdown [Delhi, Gurgaon, Noida, Aerocity, Ghaziabad], Title, Price (raw number input, live-previewed as formatted Indian price), Location, Lat, Lng, 3 Photo URL fields, Enquiry Count, (5) saving a property immediately updates localStorage so it's visible on the frontend listings without page reload.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "⚙️ SIMPLE ADMIN (/admin): Internet Identity login → Add/Edit/Delete",
+          "City dropdown [Delhi/Gurgaon/Noida/Aerocity/Ghaziabad]",
+          "Title, Price (2800000000 → ₹28,00,00,000), Location, 3 Photo URLs, Enquiry count"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Unauthenticated users see a login prompt; authenticated users see the admin dashboard",
+        "Admin can add a new property that immediately appears in the frontend listings",
+        "Admin can edit an existing property's fields and save changes",
+        "Admin can delete a property which is immediately removed from listings",
+        "Price input shows live Indian-format preview while typing",
+        "City dropdown contains all 5 cities",
+        "3 photo URL fields are present in the form",
+        "Enquiry count field is editable"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Update `frontend/src/App.tsx` routing to register the `/property` route (rendering PropertyPage) and ensure the `/admin` route renders AdminPanel. Both routes must be accessible via direct URL navigation.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-9"
+        ],
+        "quotes": [
+          "Property page ← back button WORKS",
+          "Admin panel (/admin)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating to /property?id=X loads the PropertyPage component",
+        "Navigating to /admin loads the AdminPanel component",
+        "Both routes work on direct URL entry (not just internal navigation)"
       ]
     }
   ],
   "constraints": [
-    "Only modify the two <span> elements at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1]/span[1] and span[2] and their immediate parent container.",
-    "Do not replace or remove any existing GSAP animations elsewhere on the page.",
-    "Implement using CSS keyframe animations or transitions only — no JavaScript-driven animation for this element."
+    "Do not use the Motoko backend canister for property data — all property data must use localStorage via propertyStorage.ts",
+    "Do not modify files in frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Internet Identity is the only authentication mechanism — no username/password system",
+    "No Google Maps API key — use static Google Maps links only: https://maps.google.com/?q={lat},{lng}",
+    "No gold, glassmorphism, or 3D visual effects — navy + white + gray only"
   ],
   "nonGoals": [
-    "Modifying any other section or component outside the 6th section targeted container.",
-    "Adding new text content or changing the existing span text values.",
-    "Replacing or altering any existing GSAP, Three.js, or canvas animations."
+    "Motoko backend integration for property storage (deferred to Phase 2)",
+    "4-digit PIN authentication",
+    "CSV export functionality",
+    "Complex property specs beyond title/price/location/photos/enquiry count",
+    "Real-time sync between multiple browser tabs",
+    "EMI calculator implementation (bottom bar button is a placeholder CTA)",
+    "Google Maps interactive embed or API key integration"
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Delhi city skyline panoramic photo with modern buildings and clear sky, suitable for a hero background (delhi-skyline-hero.dim_1920x1080.png)"
+    ],
     "edits": []
   }
 }

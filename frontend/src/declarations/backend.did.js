@@ -24,25 +24,40 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const PropertyType = IDL.Variant({
+  'commercial' : IDL.Null,
+  'villa' : IDL.Null,
+  'penthouse' : IDL.Null,
+  'land' : IDL.Null,
+});
+export const PropertyCategory = IDL.Variant({
+  'featured' : IDL.Null,
+  'land' : IDL.Null,
+});
+export const Property = IDL.Record({
+  'id' : IDL.Text,
+  'features' : IDL.Vec(IDL.Text),
+  'propertyType' : PropertyType,
+  'bedrooms' : IDL.Nat,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'sqft' : IDL.Nat,
+  'imageUrl' : IDL.Text,
+  'category' : PropertyCategory,
+  'price' : IDL.Nat,
+  'location' : IDL.Text,
+});
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const Lead = IDL.Record({
   'id' : IDL.Text,
+  'propertyType' : PropertyType,
   'name' : IDL.Text,
   'createdAt' : IDL.Int,
   'email' : IDL.Text,
   'message' : IDL.Text,
   'phone' : IDL.Text,
-  'budget' : IDL.Text,
+  'budget' : IDL.Nat,
 });
-export const Property = IDL.Record({
-  'id' : IDL.Text,
-  'title' : IDL.Text,
-  'createdAt' : IDL.Int,
-  'description' : IDL.Text,
-  'imageUrl' : IDL.Text,
-  'price' : IDL.Text,
-  'location' : IDL.Text,
-});
-export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -74,21 +89,28 @@ export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createLead' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, PropertyType, IDL.Text],
       [],
       [],
     ),
-  'createProperty' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-      [IDL.Text],
-      [],
-    ),
+  'createProperty' : IDL.Func([Property], [], []),
   'deleteProperty' : IDL.Func([IDL.Text], [], []),
-  'getAllLeads' : IDL.Func([], [IDL.Vec(Lead)], ['query']),
   'getAllProperties' : IDL.Func([], [IDL.Vec(Property)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getProperty' : IDL.Func([IDL.Text], [Property], ['query']),
+  'getFeaturedProperties' : IDL.Func([], [IDL.Vec(Property)], ['query']),
+  'getLeads' : IDL.Func([], [IDL.Vec(Lead)], ['query']),
+  'getPropertiesByCategory' : IDL.Func(
+      [PropertyCategory],
+      [IDL.Vec(Property)],
+      ['query'],
+    ),
+  'getPropertiesByType' : IDL.Func(
+      [PropertyType],
+      [IDL.Vec(Property)],
+      ['query'],
+    ),
+  'getProperty' : IDL.Func([IDL.Text], [IDL.Opt(Property)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -96,11 +118,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'updateProperty' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-      [IDL.Bool],
-      [],
-    ),
+  'updateProperty' : IDL.Func([IDL.Text, Property], [], []),
 });
 
 export const idlInitArgs = [];
@@ -122,25 +140,40 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const PropertyType = IDL.Variant({
+    'commercial' : IDL.Null,
+    'villa' : IDL.Null,
+    'penthouse' : IDL.Null,
+    'land' : IDL.Null,
+  });
+  const PropertyCategory = IDL.Variant({
+    'featured' : IDL.Null,
+    'land' : IDL.Null,
+  });
+  const Property = IDL.Record({
+    'id' : IDL.Text,
+    'features' : IDL.Vec(IDL.Text),
+    'propertyType' : PropertyType,
+    'bedrooms' : IDL.Nat,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'sqft' : IDL.Nat,
+    'imageUrl' : IDL.Text,
+    'category' : PropertyCategory,
+    'price' : IDL.Nat,
+    'location' : IDL.Text,
+  });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const Lead = IDL.Record({
     'id' : IDL.Text,
+    'propertyType' : PropertyType,
     'name' : IDL.Text,
     'createdAt' : IDL.Int,
     'email' : IDL.Text,
     'message' : IDL.Text,
     'phone' : IDL.Text,
-    'budget' : IDL.Text,
+    'budget' : IDL.Nat,
   });
-  const Property = IDL.Record({
-    'id' : IDL.Text,
-    'title' : IDL.Text,
-    'createdAt' : IDL.Int,
-    'description' : IDL.Text,
-    'imageUrl' : IDL.Text,
-    'price' : IDL.Text,
-    'location' : IDL.Text,
-  });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   
   return IDL.Service({
     '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -172,21 +205,28 @@ export const idlFactory = ({ IDL }) => {
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createLead' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, PropertyType, IDL.Text],
         [],
         [],
       ),
-    'createProperty' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-        [IDL.Text],
-        [],
-      ),
+    'createProperty' : IDL.Func([Property], [], []),
     'deleteProperty' : IDL.Func([IDL.Text], [], []),
-    'getAllLeads' : IDL.Func([], [IDL.Vec(Lead)], ['query']),
     'getAllProperties' : IDL.Func([], [IDL.Vec(Property)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getProperty' : IDL.Func([IDL.Text], [Property], ['query']),
+    'getFeaturedProperties' : IDL.Func([], [IDL.Vec(Property)], ['query']),
+    'getLeads' : IDL.Func([], [IDL.Vec(Lead)], ['query']),
+    'getPropertiesByCategory' : IDL.Func(
+        [PropertyCategory],
+        [IDL.Vec(Property)],
+        ['query'],
+      ),
+    'getPropertiesByType' : IDL.Func(
+        [PropertyType],
+        [IDL.Vec(Property)],
+        ['query'],
+      ),
+    'getProperty' : IDL.Func([IDL.Text], [IDL.Opt(Property)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -194,11 +234,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'updateProperty' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-        [IDL.Bool],
-        [],
-      ),
+    'updateProperty' : IDL.Func([IDL.Text, Property], [], []),
   });
 };
 

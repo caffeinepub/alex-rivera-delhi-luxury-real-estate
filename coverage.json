@@ -1,26 +1,160 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T06:21:51.195Z",
+  "generatedAt": "2026-02-25T11:38:40.978Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 11,
+    "implemented": 11,
     "items": [
       {
-        "id": "REQ-30",
-        "summary": "In the 6th section of the page, locate the parent container at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1] and its two child <span> elements (XPath span[1] and span[2]). Stack the two spans vertically so each appears on its own line (display: block or flex-direction: column on the parent). Implement a CSS animation that cycles through the spans one at a time: each span fades/slides in, stays visible for ~2 seconds, then fades/slides out before the next one appears, creating a continuous rotating/cycling text effect. Use CSS keyframe animations with an appropriate staggered animation-delay so span[2] begins its cycle after span[1] has completed its display window. The transition between spans must be smooth (opacity + translateY, approximately 0.4s ease). Do not alter any other elements outside this container.",
+        "id": "REQ-1",
+        "summary": "Hardcode 15 demo properties (3 per city: Delhi, Gurgaon, Noida, Aerocity, Ghaziabad) in localStorage with realistic NCR data. Properties must persist across F5 page refreshes. Each property must have: id, city, title, price (raw number), location, 3 photo URLs, enquiry count, lat, lng. If localStorage has no properties on first load, seed it with these 15 defaults.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Contact.tsx",
-          "frontend/src/index.css"
+          "frontend/src/types/property.ts",
+          "frontend/src/utils/propertyStorage.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/Contact.tsx",
-          "frontend/src/index.css"
+          "frontend/src/types/property.ts",
+          "frontend/src/utils/propertyStorage.ts"
+        ]
+      },
+      {
+        "id": "REQ-10",
+        "summary": "Rebuild `frontend/src/pages/AdminPanel.tsx` to: (1) require Internet Identity login (use the existing useInternetIdentity hook), (2) after login, show a CRUD interface for managing properties from propertyStorage — list all properties in a table, (3) provide Add/Edit/Delete actions, (4) the property form must include: City dropdown [Delhi, Gurgaon, Noida, Aerocity, Ghaziabad], Title, Price (raw number input, live-previewed as formatted Indian price), Location, Lat, Lng, 3 Photo URL fields, Enquiry Count, (5) saving a property immediately updates localStorage so it's visible on the frontend listings without page reload.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPanel.tsx",
+          "frontend/src/components/admin/PropertyFormModal.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPanel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Update `frontend/src/App.tsx` routing to register the `/property` route (rendering PropertyPage) and ensure the `/admin` route renders AdminPanel. Both routes must be accessible via direct URL navigation.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement a utility function `formatIndianPrice(n: number): string` in `frontend/src/utils/formatIndianPrice.ts` that converts a raw integer (e.g. 2800000000) to Indian number format with ₹ symbol (e.g. ₹28,00,00,000). Use this formatter everywhere prices are displayed — property cards, property detail pages, admin panel, and any other price display.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/formatIndianPrice.ts",
+          "frontend/src/components/PropertyCard.tsx",
+          "frontend/src/components/PropertyModal.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/formatIndianPrice.ts",
+          "frontend/src/components/PropertyCard.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement `frontend/src/utils/propertyStorage.ts` with functions: `getProperties(): Property[]`, `saveProperty(p: Property): void`, `deleteProperty(id: number): void`, `updateProperty(p: Property): void`. This module reads/writes to localStorage key `dlx_properties`. On `getProperties`, if localStorage is empty, seed with the 15 hardcoded defaults and return them. Define the `Property` type in `frontend/src/types/property.ts`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/propertyStorage.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/propertyStorage.ts"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Rebuild `frontend/src/components/Properties.tsx` to: (1) load properties from propertyStorage (not backend canister), (2) render city filter tabs [All, Delhi, Gurgaon, Noida, Aerocity, Ghaziabad] — clicking a city tab filters the displayed list to only that city's properties, (3) display filtered properties as a responsive grid of PropertyCards, (4) each card links to the property detail page `/property?id={id}`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Properties.tsx",
+          "frontend/src/components/PropertyCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Properties.tsx",
+          "frontend/src/components/PropertyCard.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement `frontend/src/pages/PropertyPage.tsx` as a full property detail page. It must: (1) read the property id from URL query params (`?id=X`), (2) load the property from propertyStorage, (3) display title, formatted price, location, photo carousel (swipeable on mobile), lat/lng as a 'View on Google Maps' button linking to `https://maps.google.com/?q={lat},{lng}`, full specs, and enquiry count, (4) include a top-left back button that calls `window.history.back()`. Register this page as the `/property` route in `frontend/src/App.tsx`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/PropertyPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/PropertyPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Redesign the site with a professional navy theme: primary color navy #1E3A8A, background white #F8FAFC, borders/dividers light gray #E5E7EB. Replace all gold/glassmorphism/3D effects with clean flat design. Use Inter or system-ui fonts throughout — remove Playfair Display. Update `frontend/src/index.css` and `frontend/tailwind.config.js` to reflect these design tokens.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/PropertyCard.tsx",
+          "frontend/src/components/Navbar.tsx",
+          "frontend/src/components/Footer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/tailwind.config.js",
+          "frontend/src/components/PropertyCard.tsx",
+          "frontend/src/components/Navbar.tsx",
+          "frontend/src/components/Footer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Update `frontend/src/components/Hero.tsx` to: (1) use a Delhi skyline background image, (2) display headline 'Trusted Delhi Agent | 50+ Deals Closed', (3) show the RERA badge 'RERA Registered Agent – HRERA-PKL-2026-00123', (4) show credentials bar '5+ Years | 50+ Happy Clients | CREDAI Member', (5) use the navy color scheme.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Hero.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Hero.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Update `frontend/src/components/TestimonialsRotator.tsx` to include this testimonial: 'Rohit Sharma, CEO Gurgaon: Closed ₹25Cr deal in 30 days!' along with at least 2 other realistic NCR client testimonials. Maintain the existing rotator/carousel UX.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/TestimonialsRotator.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/TestimonialsRotator.tsx"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Make the site fully mobile-first: (1) add a fixed bottom action bar (60px tall, full width) with primary CTA buttons (e.g., 'Calculate EMI' and 'Find My Property') — visible on mobile only, (2) ensure all interactive buttons and touch targets are at minimum 48px tall/wide, (3) ensure the property photo carousel on the detail page supports touch swipe gestures.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/MobileBottomBar.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/PropertyPage.tsx",
+          "frontend/src/components/PropertyCard.tsx",
+          "frontend/src/components/Navbar.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/MobileBottomBar.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/PropertyPage.tsx",
+          "frontend/src/components/PropertyCard.tsx",
+          "frontend/src/components/Navbar.tsx"
         ]
       }
     ]
@@ -28,10 +162,24 @@
   "changedFiles": [
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Contact.tsx",
+    "frontend/public/assets/generated/delhi-skyline-hero.dim_1920x1080.png",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Footer.tsx",
+    "frontend/src/components/Hero.tsx",
+    "frontend/src/components/MobileBottomBar.tsx",
+    "frontend/src/components/Navbar.tsx",
+    "frontend/src/components/Properties.tsx",
+    "frontend/src/components/PropertyCard.tsx",
+    "frontend/src/components/TestimonialsRotator.tsx",
+    "frontend/src/components/admin/LocalPropertyFormModal.tsx",
     "frontend/src/index.css",
+    "frontend/src/pages/AdminPanel.tsx",
+    "frontend/src/pages/PropertyPage.tsx",
+    "frontend/src/types/property.ts",
+    "frontend/src/utils/formatIndianPrice.ts",
+    "frontend/src/utils/propertyStorage.ts",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
