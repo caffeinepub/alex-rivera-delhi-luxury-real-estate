@@ -1,0 +1,31 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Rotating one-per-line span animation in 6th section",
+  "requirements": [
+    {
+      "id": "REQ-30",
+      "summary": "Implement CSS-based rotating text animation for two span elements in the 6th section container, cycling each span with smooth fade/slide transitions",
+      "acceptanceCriteria": [
+        "The two span elements inside the targeted container are stacked vertically (one per line), not side by side.",
+        "Only one span is fully visible at a time; the other is hidden or mid-transition.",
+        "The spans cycle continuously — span[1] appears, then span[2], then back to span[1] — in an infinite loop.",
+        "The transition between spans uses a smooth fade or slide animation (~0.4s).",
+        "Each span remains fully visible for approximately 2 seconds before transitioning out.",
+        "No other elements on the page are affected by this change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Contact.tsx",
+          "operation": "modify",
+          "description": "Locate the parent container at the specified XPath position within the Contact component and modify it to use flex-direction: column to stack the two span children vertically. Add unique className or data attributes to the parent container and both span elements to enable targeted CSS styling without affecting other elements."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add CSS keyframe animation definitions for the rotating span effect. Create a @keyframes rule that handles opacity and translateY transitions with ~0.4s easing. Define the animation to show each span for ~2 seconds (visible state) with smooth fade-in and fade-out transitions. Apply staggered animation-delay to the second span so it begins its cycle after the first span completes its display window. Set animation-iteration-count to infinite for continuous cycling. Ensure the parent container has position: relative and the spans use position: absolute for proper stacking, with each span initially hidden (opacity: 0) and animated into view."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-in-the-6th-section-of-the-page-locate-the-parent-container-at-xpath-html-1-body-1-div-1-div-6-div-1-div-1-and-its-two-child-span-elements-xpath-span-1-and-span-2-stack-the-two-spans-vertically-so-each-appears-on-its-own-line-display-block-or-flex-direction-column-on-the-parent-implement-a-css-animation-that-cycles-through-the-spans-one-at-a-time-each-span-fades-slides-in-stays-visible-for-2-seconds-then-fades-slides-out-before-the-next-one-appears-creating-a-continuous-rotating-cycling-text-effect-use-css-keyframe-animations-with-an-appropriate-staggered-animation-delay-so-span-2-begins-its-cycle-after-span-1-has-completed-its-display-window-the-transition-between-spans-must-be-smooth-opacity-translatey-approximately-0-4s-ease-do-not-alter-any-other-elements-outside-this-container",
+      "featureTitle": "In the 6th section of the page, locate the parent container at XPath /html[1]/body[1]/div[1]/div[6]/div[1]/div[1] and its two child <span> elements (XPath span[1] and span[2]). Stack the two spans vertically so each appears on its own line (display: block or flex-direction: column on the parent). Implement a CSS animation that cycles through the spans one at a time: each span fades/slides in, stays visible for ~2 seconds, then fades/slides out before the next one appears, creating a continuous rotating/cycling text effect. Use CSS keyframe animations with an appropriate staggered animation-delay so span[2] begins its cycle after span[1] has completed its display window. The transition between spans must be smooth (opacity + translateY, approximately 0.4s ease). Do not alter any other elements outside this container.",
+      "files": [
+        "frontend/src/components/Contact.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-30"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
